@@ -1,1238 +1,369 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary: #ffffff;
-            --secondary: #f8f9fa;
-            --accent: #000000;
-            --text: #212529;
-            --light-text: #6c757d;
-            --border: #dee2e6;
-        }
-        
-        body {
-            background-color: var(--secondary);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text);
-            padding-top: 70px;
-        }
-        
-        /* Header */
-        .navbar {
-            background-color: var(--primary);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1030;
-        }
-        
-        .navbar-brand {
-            font-weight: 800;
-            color: var(--accent) !important;
-        }
-        
-        /* Auth Section */
-        .auth-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            background-color: var(--primary);
-            position: fixed;
-            top: 56px;
-            right: 0;
-            bottom: 0;
-            width: 280px;
-            padding: 20px 0;
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            z-index: 1020;
-            overflow-y: auto;
-        }
-        
-        .sidebar.show {
-            transform: translateX(0);
-        }
-        
-        .sidebar .nav-link {
-            color: var(--text);
-            padding: 12px 20px;
-            margin: 5px 15px;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-        
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            background-color: var(--secondary);
-            color: var(--accent);
-        }
-        
-        .sidebar .nav-link i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .sidebar-backdrop {
-            position: fixed;
-            top: 56px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1010;
-            display: none;
-        }
-        
-        /* Main Content */
-        .main-content {
-            padding: 20px;
-            transition: margin-right 0.3s ease;
-        }
-        
-        .section-title {
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 10px;
-            margin-bottom: 25px;
-            color: var(--text);
-            font-weight: 600;
-        }
-        
-        /* Cards */
-        .card {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-            height: 100%;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-header {
-            background-color: var(--primary);
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-            color: var(--accent);
-        }
-        
-        .stats-card {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .stats-number {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: var(--accent);
-            margin: 10px 0;
-        }
-        
-        /* Utilities */
-        .hidden {
-            display: none;
-        }
-        
-        .btn-primary {
-            background-color: var(--accent);
-            border-color: var(--accent);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #333;
-            border-color: #333;
-            color: white;
-        }
-        
-        .btn-outline-primary {
-            color: var(--accent);
-            border-color: var(--accent);
-        }
-        
-        .btn-outline-primary:hover {
-            background-color: var(--accent);
-            color: white;
-        }
-        
-        .text-primary {
-            color: var(--accent) !important;
-        }
-        
-        .badge.bg-primary {
-            background-color: var(--accent) !important;
-        }
-        
-        /* Responsive adjustments */
-        @media (min-width: 992px) {
-            .sidebar {
-                transform: translateX(0);
-                width: 280px;
-            }
-            
-            .sidebar-backdrop {
-                display: none !important;
-            }
-            
-            .main-content {
-                margin-right: 280px;
-            }
-            
-            .navbar-toggler {
-                display: none;
-            }
-        }
-        
-        @media (max-width: 991.98px) {
-            .sidebar {
-                top: 56px;
-            }
-        }
-        
-        /* Chart styling */
-        .chart-container {
-            position: relative;
-            height: 250px;
-            width: 100%;
-        }
-        
-        /* List group items */
-        .list-group-item {
-            border: 1px solid var(--border);
-            background-color: var(--primary);
-            color: var(--text);
-        }
-        
-        .alert-notification {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            z-index: 1050;
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-dumbbell"></i> FitnessTracker
-            </a>
-            <button class="navbar-toggler ms-auto" type="button" id="sidebarToggle">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fitness API Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .navbar {
+      margin-bottom: 20px;
+    }
+  </style>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Fitness Dashboard</a>
+      </div>
     </nav>
-    
-    <!-- Auth Section -->
-    <div id="auth-section" class="auth-container">
-        <h3 class="text-center mb-4">Login to FitnessTracker</h3>
-        <form id="login-form">
+
+    <div class="container mt-4">
+      <h1 class="text-center">Welcome, Nasiruos!</h1>
+
+      <div class="card mt-4">
+        <div class="card-header">
+          <h2>Accounts</h2>
+        </div>
+        <div class="card-body">
+          <form id="account-form">
+            <h4>Create/Update Account</h4>
             <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" class="form-control" id="login-username" required>
+              <label for="account-name" class="form-label">Account Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="account-name"
+                required
+              />
             </div>
+            <button type="submit" class="btn btn-primary">Save Account</button>
+          </form>
+
+          <h4 class="mt-4">Account List</h4>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="account-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header">
+          <h2>Exercises</h2>
+        </div>
+        <div class="card-body">
+          <form id="exercise-form">
+            <h4>Create/Update Exercise</h4>
             <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" id="login-password" required>
+              <label for="exercise-name" class="form-label"
+                >Exercise Name</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="exercise-name"
+                required
+              />
             </div>
-            <button type="submit" class="btn btn-primary w-100">Login</button>
-            <div class="text-center mt-3">
-                <small class="text-muted">Don't have an account? <a href="#" id="show-register">Register</a></small>
-            </div>
-        </form>
-        
-        <form id="register-form" class="hidden">
-            <h3 class="text-center mb-4">Create Account</h3>
+            <button type="submit" class="btn btn-primary">Save Exercise</button>
+          </form>
+
+          <h4 class="mt-4">Exercise List</h4>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="exercise-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header">
+          <h2>Programs</h2>
+        </div>
+        <div class="card-body">
+          <form id="program-form">
+            <h4>Create/Update Program</h4>
             <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" class="form-control" id="register-username" required>
+              <label for="program-name" class="form-label">Program Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="program-name"
+                required
+              />
             </div>
+            <button type="submit" class="btn btn-primary">Save Program</button>
+          </form>
+
+          <h4 class="mt-4">Program List</h4>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="program-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header">
+          <h2>Workouts</h2>
+        </div>
+        <div class="card-body">
+          <form id="workout-form">
+            <h4>Create/Update Workout</h4>
             <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" id="register-email" required>
+              <label for="workout-name" class="form-label">Workout Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="workout-name"
+                required
+              />
             </div>
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" id="register-password" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Register</button>
-            <div class="text-center mt-3">
-                <small class="text-muted">Already have an account? <a href="#" id="show-login">Login</a></small>
-            </div>
-        </form>
-    </div>
-    
-    <!-- Sidebar Backdrop -->
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-    
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="#" data-section="dashboard">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="exercises">
-                    <i class="fas fa-running"></i> Exercises
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="workouts">
-                    <i class="fas fa-dumbbell"></i> Workouts
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="programs">
-                    <i class="fas fa-clipboard-list"></i> Programs
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="analytics">
-                    <i class="fas fa-chart-line"></i> Analytics
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="profile">
-                    <i class="fas fa-user"></i> Profile
-                </a>
-            </li>
-            <li class="nav-item mt-4">
-                <a class="nav-link text-danger" href="#" id="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </li>
-        </ul>
-    </div>
-    
-    <!-- Main Content -->
-    <div id="app-section" class="main-content hidden">
-        <!-- Dashboard Section -->
-        <div id="dashboard-section">
-            <h2 class="section-title">Dashboard Overview</h2>
-            
-            <div class="row">
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="card stats-card">
-                        <i class="fas fa-weight fa-2x"></i>
-                        <h5>Current Weight</h5>
-                        <div class="stats-number" id="current-weight">--</div>
-                        <small class="text-muted">kg</small>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="card stats-card">
-                        <i class="fas fa-heart fa-2x"></i>
-                        <h5>BMI</h5>
-                        <div class="stats-number" id="current-bmi">--</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="card stats-card">
-                        <i class="fas fa-calendar-check fa-2x"></i>
-                        <h5>Workouts This Month</h5>
-                        <div class="stats-number" id="workout-count">--</div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="card stats-card">
-                        <i class="fas fa-list-alt fa-2x"></i>
-                        <h5>Exercises</h5>
-                        <div class="stats-number" id="exercise-count">--</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row mt-4">
-                <div class="col-lg-8 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Weight History</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="chart-container">
-                                <canvas id="weight-chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Recent Workouts</h5>
-                        </div>
-                        <div class="card-body">
-                            <ul class="list-group list-group-flush" id="recent-workouts">
-                                <li class="list-group-item text-center">No workouts yet</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Quick Actions</h5>
-                        </div>
-                        <div class="card-body">
-                            <button class="btn btn-outline-primary w-100 mb-2" data-section="workouts">
-                                <i class="fas fa-plus"></i> Log Workout
-                            </button>
-                            <button class="btn btn-outline-primary w-100 mb-2" data-section="exercises">
-                                <i class="fas fa-running"></i> Add Exercise
-                            </button>
-                            <button class="btn btn-outline-primary w-100" data-section="profile">
-                                <i class="fas fa-user"></i> Update Profile
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <button type="submit" class="btn btn-primary">Save Workout</button>
+          </form>
+
+          <h4 class="mt-4">Workout List</h4>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="workout-table-body"></tbody>
+          </table>
         </div>
-        
-        <!-- Other sections will be displayed here -->
-        <div id="exercises-section" class="hidden">
-            <h2 class="section-title">Exercise Management</h2>
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExerciseModal">
-                    <i class="fas fa-plus"></i> Add Exercise
-                </button>
-                <input type="text" class="form-control w-50" placeholder="Search exercises..." id="exercise-search">
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="exercises-table">
-                        <tr><td colspan="3" class="text-center">Loading exercises...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div id="workouts-section" class="hidden">
-            <h2 class="section-title">Workout Sessions</h2>
-            <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addWorkoutModal">
-                <i class="fas fa-plus"></i> Add New Workout
-            </button>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Your Workout Sessions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Program</th>
-                                    <th>Duration</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sessions-table">
-                                <tr><td colspan="4" class="text-center">Loading sessions...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="programs-section" class="hidden">
-            <h2 class="section-title">Exercise Programs</h2>
-            <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addProgramModal">
-                <i class="fas fa-plus"></i> Create New Program
-            </button>
-            
-            <div class="row" id="programs-list">
-                <div class="col-12 text-center">Loading programs...</div>
-            </div>
-        </div>
-        
-        <div id="analytics-section" class="hidden">
-            <h2 class="section-title">Analytics & Progress</h2>
-            
-            <ul class="nav nav-tabs mb-4" id="analyticsTabs">
-                <li class="nav-item">
-                    <a class="nav-link active" data-bs-toggle="tab" href="#weightTab">Weight</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#bmiTab">BMI</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#exerciseTab">Exercise Progress</a>
-                </li>
-            </ul>
-            
-            <div class="tab-content">
-                <div class="tab-pane fade show active" id="weightTab">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Weight Progress</h5>
-                            <canvas id="weightProgressChart" height="150"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="tab-pane fade" id="bmiTab">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">BMI History</h5>
-                            <canvas id="bmiChart" height="150"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="tab-pane fade" id="exerciseTab">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Exercise Progress</h5>
-                            <div class="mb-3">
-                                <select class="form-select" id="exerciseSelect">
-                                    <option value="">Select an exercise</option>
-                                </select>
-                            </div>
-                            <canvas id="exerciseProgressChart" height="150"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="profile-section" class="hidden">
-            <h2 class="section-title">Profile Management</h2>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Current Profile</h5>
-                        </div>
-                        <div class="card-body" id="current-profile">
-                            <div class="text-center">Loading profile...</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">Update Profile</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="profile-form">
-                                <div class="mb-3">
-                                    <label class="form-label">Height (cm)</label>
-                                    <input type="number" class="form-control" id="profile-height">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Weight (kg)</label>
-                                    <input type="number" class="form-control" id="profile-weight">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Location</label>
-                                    <input type="text" class="form-control" id="profile-location">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Birth Date</label>
-                                    <input type="date" class="form-control" id="profile-birthdate">
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Update Profile</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Profile History</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Weight</th>
-                                    <th>Height</th>
-                                    <th>BMI</th>
-                                    <th>Location</th>
-                                </tr>
-                            </thead>
-                            <tbody id="profile-history">
-                                <tr><td colspan="5" class="text-center">Loading history...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Modals -->
-    <div class="modal fade" id="addExerciseModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Exercise</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="add-exercise-form">
-                        <div class="mb-3">
-                            <label class="form-label">Exercise Name</label>
-                            <input type="text" class="form-control" id="exercise-name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Category</label>
-                            <input type="text" class="form-control" id="exercise-category" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Description (Optional)</label>
-                            <textarea class="form-control" id="exercise-description" rows="3"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="save-exercise">Save Exercise</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Global variables
-        let accessToken = null;
-        let refreshToken = null;
-        let currentUser = null;
-        const API_BASE = 'https://nasiruos.pythonanywhere.com/api';
-
-        // DOM Ready
-        $(document).ready(function() {
-            // Check if user is already logged in
-            const savedToken = localStorage.getItem('accessToken');
-            const savedUser = localStorage.getItem('currentUser');
-            
-            if (savedToken && savedUser) {
-                accessToken = savedToken;
-                currentUser = JSON.parse(savedUser);
-                showApp();
-                loadDashboard();
-            } else {
-                showAuth();
-            }
-
-            // Event listeners
-            $('#login-form').on('submit', handleLogin);
-            $('#register-form').on('submit', handleRegister);
-            $('#logout-btn').on('click', handleLogout);
-            $('#show-register').on('click', showRegisterForm);
-            $('#show-login').on('click', showLoginForm);
-            
-            // Navigation
-            $('[data-section]').on('click', function(e) {
-                e.preventDefault();
-                const section = $(this).data('section');
-                showSection(section);
-                
-                // On mobile, close sidebar after selection
-                if (window.innerWidth < 992) {
-                    hideSidebar();
-                }
-            });
-            
-            // Sidebar toggle
-            $('#sidebarToggle').on('click', toggleSidebar);
-            $('#sidebarBackdrop').on('click', hideSidebar);
-            
-            // Initialize charts
-            initCharts();
-        });
-
-        // Authentication functions
-        function handleLogin(e) {
-            e.preventDefault();
-            const username = $('#login-username').val();
-            const password = $('#login-password').val();
-            
-            $.ajax({
-                url: `${API_BASE}/accounts/login/`,
-                method: 'POST',
-                data: JSON.stringify({ username, password }),
-                contentType: 'application/json',
-                success: function(response) {
-                    accessToken = response.access;
-                    refreshToken = response.refresh;
-                    localStorage.setItem('accessToken', accessToken);
-                    localStorage.setItem('refreshToken', refreshToken);
-                    
-                    // Get user info
-                    getUserInfo(username);
-                },
-                error: function(xhr) {
-                    let errorMsg = 'Login failed. Please try again.';
-                    if (xhr.responseJSON && xhr.responseJSON.detail) {
-                        errorMsg = xhr.responseJSON.detail;
-                    }
-                    showError(errorMsg);
-                }
-            });
-        }
-
-        function handleRegister(e) {
-            e.preventDefault();
-            const username = $('#register-username').val();
-            const email = $('#register-email').val();
-            const password = $('#register-password').val();
-            
-            $.ajax({
-                url: `${API_BASE}/accounts/register/`,
-                method: 'POST',
-                data: JSON.stringify({ username, email, password }),
-                contentType: 'application/json',
-                success: function() {
-                    showSuccess('Registration successful! Please login.');
-                    showLoginForm();
-                    $('#register-form')[0].reset();
-                },
-                error: function(xhr) {
-                    let errorMsg = 'Registration failed. Please try again.';
-                    if (xhr.responseJSON) {
-                        errorMsg = JSON.stringify(xhr.responseJSON);
-                    }
-                    showError(errorMsg);
-                }
-            });
-        }
-
-        function getUserInfo(username) {
-            currentUser = { username };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showApp();
-            loadDashboard();
-            showSuccess('Login successful!');
-        }
-
-        function handleLogout() {
-            accessToken = null;
-            refreshToken = null;
-            currentUser = null;
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('currentUser');
-            showAuth();
-            showSuccess('You have been logged out.');
-        }
-
-        function showLoginForm() {
-            $('#register-form').addClass('hidden');
-            $('#login-form').removeClass('hidden');
-        }
-
-        function showRegisterForm() {
-            $('#login-form').addClass('hidden');
-            $('#register-form').removeClass('hidden');
-        }
-
-        // UI Navigation functions
-        function showAuth() {
-            $('#auth-section').removeClass('hidden');
-            $('#app-section').addClass('hidden');
-        }
-
-        function showApp() {
-            $('#auth-section').addClass('hidden');
-            $('#app-section').removeClass('hidden');
-        }
-
-        function showSection(sectionName) {
-            // Update navigation
-            $('.nav-link').removeClass('active');
-            $(`.nav-link[data-section="${sectionName}"]`).addClass('active');
-            
-            // Hide all sections
-            $('#dashboard-section, #exercises-section, #workouts-section, #programs-section, #analytics-section, #profile-section').addClass('hidden');
-            
-            // Show the selected section
-            $(`#${sectionName}-section`).removeClass('hidden');
-            
-            // Load section data if needed
-            switch(sectionName) {
-                case 'exercises':
-                    loadExercises();
-                    break;
-                case 'workouts':
-                    loadWorkouts();
-                    break;
-                case 'programs':
-                    loadPrograms();
-                    break;
-                case 'analytics':
-                    loadAnalytics();
-                    break;
-                case 'profile':
-                    loadProfile();
-                    break;
-            }
-        }
-
-        // Sidebar functions
-        function toggleSidebar() {
-            $('#sidebar').toggleClass('show');
-            $('#sidebarBackdrop').toggle();
-        }
-        
-        function hideSidebar() {
-            $('#sidebar').removeClass('show');
-            $('#sidebarBackdrop').hide();
-        }
-
-        // API call function with authentication
-        function apiCall(url, method = 'GET', data = null) {
-            return $.ajax({
-                url: `${API_BASE}${url}`,
-                method: method,
-                data: data ? JSON.stringify(data) : null,
-                contentType: 'application/json',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            }).fail(function(xhr) {
-                if (xhr.status === 401) {
-                    // Token might be expired, try to refresh
-                    return refreshAccessToken()
-                        .then(() => {
-                            // Retry the original request
-                            return $.ajax({
-                                url: `${API_BASE}${url}`,
-                                method: method,
-                                data: data ? JSON.stringify(data) : null,
-                                contentType: 'application/json',
-                                headers: {
-                                    'Authorization': `Bearer ${accessToken}`
-                                }
-                            });
-                        })
-                        .fail(() => {
-                            handleLogout();
-                        });
-                }
-                return Promise.reject(xhr);
-            });
-        }
-
-        function refreshAccessToken() {
-            return $.ajax({
-                url: `${API_BASE}/accounts/token/refresh/`,
-                method: 'POST',
-                data: JSON.stringify({ refresh: refreshToken }),
-                contentType: 'application/json'
-            }).then(function(response) {
-                accessToken = response.access;
-                localStorage.setItem('accessToken', accessToken);
-                return Promise.resolve();
-            }).fail(function() {
-                handleLogout();
-                return Promise.reject();
-            });
-        }
-
-        // Data loading functions
-        function loadDashboard() {
-            // Load current profile
-            apiCall('/accounts/profile/current/')
-                .then(profile => {
-                    $('#current-weight').text(profile.weight || '--');
-                    if (profile.weight && profile.height) {
-                        const heightInMeters = profile.height / 100;
-                        const bmi = profile.weight / (heightInMeters * heightInMeters);
-                        $('#current-bmi').text(bmi.toFixed(1));
-                    } else {
-                        $('#current-bmi').text('--');
-                    }
-                })
-                .catch(() => {
-                    $('#current-weight').text('--');
-                    $('#current-bmi').text('--');
-                });
-            
-            // Load workout count
-            apiCall('/workouts/sessions/')
-                .then(sessions => {
-                    const thisMonth = new Date().getMonth();
-                    const monthSessions = sessions.filter(s => {
-                        const sessionDate = new Date(s.date);
-                        return sessionDate.getMonth() === thisMonth;
-                    });
-                    $('#workout-count').text(monthSessions.length);
-                    
-                    // Update recent workouts
-                    const recentSessions = sessions.slice(0, 5);
-                    const list = $('#recent-workouts');
-                    list.empty();
-                    
-                    if (recentSessions.length === 0) {
-                        list.append('<li class="list-group-item text-center">No workouts yet</li>');
-                    } else {
-                        recentSessions.forEach(session => {
-                            list.append(`
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>${new Date(session.date).toLocaleDateString()}</strong>
-                                        <div class="text-muted">${session.program_name || 'No program'}</div>
-                                    </div>
-                                    <span class="badge bg-primary rounded-pill">${session.duration} min</span>
-                                </li>
-                            `);
-                        });
-                    }
-                })
-                .catch(() => {
-                    $('#workout-count').text('--');
-                });
-            
-            // Load exercise count
-            apiCall('/exercises/')
-                .then(exercises => {
-                    $('#exercise-count').text(exercises.length);
-                })
-                .catch(() => {
-                    $('#exercise-count').text('--');
-                });
-            
-            // Load weight history
-            apiCall('/accounts/profile/history/')
-                .then(profiles => {
-                    if (profiles.length > 0) {
-                        const weightData = profiles.map(p => p.weight).filter(w => w !== null);
-                        const dateLabels = profiles.map(p => new Date(p.created_at).toLocaleDateString());
-                        
-                        const ctx = document.getElementById('weight-chart').getContext('2d');
-                        if (window.weightChart) {
-                            window.weightChart.destroy();
-                        }
-                        window.weightChart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: dateLabels,
-                                datasets: [{
-                                    label: 'Weight (kg)',
-                                    data: weightData,
-                                    borderColor: '#000000',
-                                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                                    fill: true,
-                                    tension: 0.4
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: false,
-                                        grid: {
-                                            color: 'rgba(0, 0, 0, 0.1)'
-                                        }
-                                    },
-                                    x: {
-                                        grid: {
-                                            display: false
-                                        }
-                                    }
-                                },
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
-        }
-
-        function loadExercises() {
-            apiCall('/exercises/')
-                .then(exercises => {
-                    const table = $('#exercises-table');
-                    table.empty();
-                    
-                    if (exercises.length === 0) {
-                        table.html('<tr><td colspan="3" class="text-center">No exercises found</td></tr>');
-                        return;
-                    }
-                    
-                    exercises.forEach(exercise => {
-                        table.append(`
-                            <tr>
-                                <td>${exercise.name}</td>
-                                <td>${exercise.category}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary">Edit</button>
-                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
-                                </td>
-                            </tr>
-                        `);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading exercises:', error);
-                    $('#exercises-table').html('<tr><td colspan="3" class="text-center">Error loading exercises</td></tr>');
-                });
-        }
-
-        function loadWorkouts() {
-            apiCall('/workouts/sessions/')
-                .then(sessions => {
-                    const table = $('#sessions-table');
-                    table.empty();
-                    
-                    if (sessions.length === 0) {
-                        table.html('<tr><td colspan="4" class="text-center">No workout sessions found</td></tr>');
-                        return;
-                    }
-                    
-                    sessions.forEach(session => {
-                        table.append(`
-                            <tr>
-                                <td>${new Date(session.date).toLocaleDateString()}</td>
-                                <td>${session.program_name || 'No program'}</td>
-                                <td>${session.duration} minutes</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary">View</button>
-                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
-                                </td>
-                            </tr>
-                        `);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading sessions:', error);
-                    $('#sessions-table').html('<tr><td colspan="4" class="text-center">Error loading sessions</td></tr>');
-                });
-        }
-
-        function loadPrograms() {
-            apiCall('/programs/')
-                .then(programs => {
-                    const container = $('#programs-list');
-                    container.empty();
-                    
-                    if (programs.length === 0) {
-                        container.html('<div class="col-12 text-center">No programs found</div>');
-                        return;
-                    }
-                    
-                    programs.forEach(program => {
-                        container.append(`
-                            <div class="col-md-6 mb-4">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${program.name}</h5>
-                                        <p class="card-text">${program.description || 'No description'}</p>
-                                        <button class="btn btn-sm btn-outline-primary">View</button>
-                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
-                                    </div>
-                                </div>
-                            </div>
-                        `);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading programs:', error);
-                    $('#programs-list').html('<div class="col-12 text-center">Error loading programs</div>');
-                });
-        }
-
-        function loadAnalytics() {
-            // This would load analytics data
-            console.log("Loading analytics data...");
-        }
-
-        function loadProfile() {
-            apiCall('/accounts/profile/current/')
-                .then(profile => {
-                    $('#profile-height').val(profile.height || '');
-                    $('#profile-weight').val(profile.weight || '');
-                    $('#profile-location').val(profile.location || '');
-                    $('#profile-birthdate').val(profile.birth_date || '');
-                    
-                    let bmi = '--';
-                    if (profile.weight && profile.height) {
-                        const heightInMeters = profile.height / 100;
-                        bmi = (profile.weight / (heightInMeters * heightInMeters)).toFixed(1);
-                    }
-                    
-                    $('#current-profile').html(`
-                        <div class="row mb-3">
-                            <div class="col-sm-4 fw-bold">Username:</div>
-                            <div class="col-sm-8">${currentUser.username}</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-sm-4 fw-bold">Height:</div>
-                            <div class="col-sm-8">${profile.height || '--'} cm</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-sm-4 fw-bold">Weight:</div>
-                            <div class="col-sm-8">${profile.weight || '--'} kg</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-sm-4 fw-bold">BMI:</div>
-                            <div class="col-sm-8">${bmi}</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-4 fw-bold">Location:</div>
-                            <div class="col-sm-8">${profile.location || '--'}</div>
-                        </div>
-                    `);
-                })
-                .catch(error => {
-                    console.error('Error loading profile:', error);
-                    $('#current-profile').html('<p class="text-center">Error loading profile</p>');
-                });
-            
-            // Load profile history
-            apiCall('/accounts/profile/history/')
-                .then(profiles => {
-                    const table = $('#profile-history');
-                    table.empty();
-                    
-                    if (profiles.length === 0) {
-                        table.html('<tr><td colspan="5" class="text-center">No profile history found</td></tr>');
-                        return;
-                    }
-                    
-                    profiles.forEach(profile => {
-                        let bmi = '--';
-                        if (profile.weight && profile.height) {
-                            const heightInMeters = profile.height / 100;
-                            bmi = (profile.weight / (heightInMeters * heightInMeters)).toFixed(1);
-                        }
-                        
-                        table.append(`
-                            <tr>
-                                <td>${new Date(profile.created_at).toLocaleDateString()}</td>
-                                <td>${profile.weight || '--'}</td>
-                                <td>${profile.height || '--'}</td>
-                                <td>${bmi}</td>
-                                <td>${profile.location || '--'}</td>
-                            </tr>
-                        `);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading profile history:', error);
-                    $('#profile-history').html('<tr><td colspan="5" class="text-center">Error loading profile history</td></tr>');
-                });
-        }
-
-        // UI Helper functions
-        function showError(message) {
-            showNotification(message, 'error');
-        }
-
-        function showSuccess(message) {
-            showNotification(message, 'success');
-        }
-
-        function showNotification(message, type = 'info') {
-            // Remove any existing notifications
-            $('.alert-notification').remove();
-            
-            const alertClass = type === 'success' ? 'alert-success' : 
-                              type === 'error' ? 'alert-danger' :
-                              type === 'warning' ? 'alert-warning' : 'alert-info';
-            
-            const icon = type === 'success' ? 'fa-check-circle' :
-                         type === 'error' ? 'fa-exclamation-circle' :
-                         type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
-            
-            const notification = $(`
-                <div class="alert ${alertClass} alert-dismissible fade show alert-notification" role="alert">
-                    <i class="fas ${icon} me-2"></i> ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `);
-            
-            $('body').append(notification);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                notification.alert('close');
-            }, 5000);
-        }
-
-        function initCharts() {
-            // Initialize empty charts
-            const weightCtx = document.getElementById('weight-chart').getContext('2d');
-            window.weightChart = new Chart(weightCtx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Weight (kg)',
-                        data: [],
-                        borderColor: '#000000',
-                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-        }
-    </script>
-</body>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="api.js"></script>
+  </body>
 </html>
+<script>
+  $(document).ready(function () {
+    const API_BASE_URL = "https://nasiruos.pythonanywhere.com/api/";
+
+    // --- Account Feature ---
+    function fetchAccounts() {
+      $.ajax({
+        url: API_BASE_URL + "account/",
+        method: "GET",
+        success: function (data) {
+          let html = "";
+          data.forEach((account) => {
+            html += `
+                        <tr>
+                            <td>${account.id}</td>
+                            <td>${account.name}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning edit-account" data-id="${account.id}" data-name="${account.name}">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-account" data-id="${account.id}">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+          });
+          $("#account-table-body").html(html);
+        },
+        error: function (error) {
+          console.error("Error fetching accounts:", error);
+        },
+      });
+    }
+
+    $("#account-form").on("submit", function (e) {
+      e.preventDefault();
+      const accountName = $("#account-name").val();
+      $.ajax({
+        url: API_BASE_URL + "account/",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ name: accountName }),
+        success: function (response) {
+          alert("Account saved successfully!");
+          $("#account-form")[0].reset();
+          fetchAccounts();
+        },
+        error: function (error) {
+          console.error("Error saving account:", error);
+        },
+      });
+    });
+
+    // --- Exercise Feature ---
+    function fetchExercises() {
+      $.ajax({
+        url: API_BASE_URL + "exercise/",
+        method: "GET",
+        success: function (data) {
+          let html = "";
+          data.forEach((exercise) => {
+            html += `
+                        <tr>
+                            <td>${exercise.id}</td>
+                            <td>${exercise.name}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning edit-exercise" data-id="${exercise.id}" data-name="${exercise.name}">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-exercise" data-id="${exercise.id}">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+          });
+          $("#exercise-table-body").html(html);
+        },
+        error: function (error) {
+          console.error("Error fetching exercises:", error);
+        },
+      });
+    }
+
+    $("#exercise-form").on("submit", function (e) {
+      e.preventDefault();
+      const exerciseName = $("#exercise-name").val();
+      $.ajax({
+        url: API_BASE_URL + "exercise/",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ name: exerciseName }),
+        success: function (response) {
+          alert("Exercise saved successfully!");
+          $("#exercise-form")[0].reset();
+          fetchExercises();
+        },
+        error: function (error) {
+          console.error("Error saving exercise:", error);
+        },
+      });
+    });
+
+    // --- Program Feature ---
+    function fetchPrograms() {
+      $.ajax({
+        url: API_BASE_URL + "program/",
+        method: "GET",
+        success: function (data) {
+          let html = "";
+          data.forEach((program) => {
+            html += `
+                        <tr>
+                            <td>${program.id}</td>
+                            <td>${program.name}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning edit-program" data-id="${program.id}" data-name="${program.name}">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-program" data-id="${program.id}">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+          });
+          $("#program-table-body").html(html);
+        },
+        error: function (error) {
+          console.error("Error fetching programs:", error);
+        },
+      });
+    }
+
+    $("#program-form").on("submit", function (e) {
+      e.preventDefault();
+      const programName = $("#program-name").val();
+      $.ajax({
+        url: API_BASE_URL + "program/",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ name: programName }),
+        success: function (response) {
+          alert("Program saved successfully!");
+          $("#program-form")[0].reset();
+          fetchPrograms();
+        },
+        error: function (error) {
+          console.error("Error saving program:", error);
+        },
+      });
+    });
+
+    // --- Workout Feature ---
+    function fetchWorkouts() {
+      $.ajax({
+        url: API_BASE_URL + "workout/",
+        method: "GET",
+        success: function (data) {
+          let html = "";
+          data.forEach((workout) => {
+            html += `
+                        <tr>
+                            <td>${workout.id}</td>
+                            <td>${workout.name}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning edit-workout" data-id="${workout.id}" data-name="${workout.name}">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-workout" data-id="${workout.id}">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+          });
+          $("#workout-table-body").html(html);
+        },
+        error: function (error) {
+          console.error("Error fetching workouts:", error);
+        },
+      });
+    }
+
+    $("#workout-form").on("submit", function (e) {
+      e.preventDefault();
+      const workoutName = $("#workout-name").val();
+      $.ajax({
+        url: API_BASE_URL + "workout/",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ name: workoutName }),
+        success: function (response) {
+          alert("Workout saved successfully!");
+          $("#workout-form")[0].reset();
+          fetchWorkouts();
+        },
+        error: function (error) {
+          console.error("Error saving workout:", error);
+        },
+      });
+    });
+
+    // Initial data fetch on page load
+    fetchAccounts();
+    fetchExercises();
+    fetchPrograms();
+    fetchWorkouts();
+  });
+</script>
