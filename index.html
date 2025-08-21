@@ -1,789 +1,1519 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitnessTracker Pro</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary: #ffffff;
-            --secondary: #f8f9fa;
-            --accent: #000000;
-            --text: #212529;
-            --light-text: #6c757d;
-            --border: #dee2e6;
-            --success: #198754;
-            --danger: #dc3545;
-            --warning: #ffc107;
-        }
-        
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-        
-        /* Enhanced Header */
-        .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1030;
-            padding: 1rem 0;
-        }
-        
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--accent) !important;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .navbar-brand i {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* Auth Section with glassmorphism */
-        .auth-container {
-            max-width: 450px;
-            margin: 100px auto 50px;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .auth-title {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* Enhanced Sidebar */
-        .sidebar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
-            position: fixed;
-            top: 80px;
-            right: 0;
-            bottom: 0;
-            width: 300px;
-            padding: 30px 0;
-            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-            transform: translateX(100%);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1020;
-            overflow-y: auto;
-            border-left: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        .sidebar.show {
-            transform: translateX(0);
-        }
-        
-        .sidebar .nav-link {
-            color: var(--text);
-            padding: 15px 25px;
-            margin: 5px 20px;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .sidebar .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: left 0.3s ease;
-            z-index: -1;
-        }
-        
-        .sidebar .nav-link:hover::before,
-        .sidebar .nav-link.active::before {
-            left: 0;
-        }
-        
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            color: white;
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        .sidebar .nav-link i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        
-        .sidebar-backdrop {
-            position: fixed;
-            top: 80px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(3px);
-            z-index: 1010;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-backdrop.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        /* Main Content */
-        .main-content {
-            margin-top: 80px;
-            padding: 30px;
-            transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            min-height: calc(100vh - 80px);
-        }
-        
-        .section-title {
-            border-bottom: 3px solid transparent;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-clip: border-box;
-            border-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) 1;
-            padding-bottom: 15px;
-            margin-bottom: 30px;
-            font-weight: 700;
-            font-size: 2rem;
-        }
-        
-        /* Enhanced Cards */
-        .card {
-            border: none;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            margin-bottom: 25px;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-        
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-        }
-        
-        .card-header {
-            background: transparent;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            font-weight: 600;
-            font-size: 1.2rem;
-            padding: 20px 25px;
-        }
-        
-        .card-body {
-            padding: 25px;
-        }
-        
-        /* Stats Cards */
-        .stats-card {
-            text-align: center;
-            padding: 30px 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stats-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        
-        .stats-card i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .stats-number {
-            font-size: 2.8rem;
-            font-weight: 800;
-            color: var(--accent);
-            margin: 15px 0 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stats-label {
-            font-weight: 600;
-            color: var(--light-text);
-            margin-bottom: 10px;
-        }
-        
-        /* Enhanced Buttons */
-        .btn {
-            border-radius: 10px;
-            font-weight: 600;
-            padding: 12px 24px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        }
-        
-        .btn-outline-primary {
-            color: var(--accent);
-            border: 2px solid transparent;
-            background: linear-gradient(white, white) padding-box,
-                        linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
-        }
-        
-        .btn-outline-primary:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        /* Form Controls */
-        .form-control, .form-select {
-            border: 2px solid rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            padding: 12px 16px;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.8);
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.15);
-            background: white;
-        }
-        
-        .form-label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text);
-        }
-        
-        /* Tables */
-        .table {
-            background: transparent;
-        }
-        
-        .table th {
-            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
-            font-weight: 600;
-            color: var(--accent);
-            padding: 15px;
-        }
-        
-        .table td {
-            padding: 15px;
-            vertical-align: middle;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        
-        .table tbody tr {
-            transition: all 0.3s ease;
-        }
-        
-        .table tbody tr:hover {
-            background: rgba(102, 126, 234, 0.05);
-            transform: scale(1.01);
-        }
-        
-        /* Chart Container */
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-            padding: 20px;
-        }
-        
-        /* List Groups */
-        .list-group-item {
-            border: none;
-            background: rgba(255, 255, 255, 0.7);
-            margin-bottom: 8px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .list-group-item:hover {
-            background: rgba(102, 126, 234, 0.1);
-            transform: translateX(5px);
-        }
-        
-        /* Notifications */
-        .notification {
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            z-index: 1050;
-            max-width: 350px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            border: none;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        /* Utility Classes */
-        .hidden { display: none !important; }
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* Responsive Design */
-        @media (min-width: 1200px) {
-            .sidebar {
-                transform: translateX(0);
-                position: fixed;
-            }
-            
-            .main-content {
-                margin-right: 300px;
-            }
-            
-            .navbar-toggler {
-                display: none;
-            }
-        }
-        
-        @media (max-width: 1199.98px) {
-            .sidebar {
-                top: 80px;
-                width: 280px;
-            }
-            
-            .main-content {
-                margin-right: 0;
-                padding: 20px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-            }
-            
-            .stats-card {
-                padding: 20px 15px;
-            }
-            
-            .stats-number {
-                font-size: 2.2rem;
-            }
-        }
-        
-        /* Loading Spinner */
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(102, 126, 234, 0.1);
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Modal Enhancements */
-        .modal-content {
-            border: none;
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-        }
-        
-        .modal-header {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-        }
-        
-        /* Tab Navigation */
-        .nav-tabs .nav-link {
-            border: none;
-            color: var(--light-text);
-            font-weight: 600;
-            padding: 12px 20px;
-            margin-right: 5px;
-            border-radius: 8px 8px 0 0;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .nav-tabs .nav-link:hover:not(.active) {
-            background: rgba(102, 126, 234, 0.1);
-            color: var(--accent);
-        }
-    </style>
+  <!--
+    FitnessTracker — Single-file Vanilla JS + Bootstrap + Chart.js
+    - Full JWT auth (login/register + token refresh)
+    - Dashboard (stats + recent workouts + weight chart)
+    - CRUD: Exercises, Programs, Workouts
+    - Profile (view, update, history + BMI)
+    - Analytics (Weight, BMI, Exercise progress)
+    - Responsive right sidebar + mobile drawer
+    - Bootstrap 5 toasts, spinners, confirmations
+    - Pure Vanilla JS (no jQuery)
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fitness Tracker</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+  <!-- Font Awesome (icons) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    referrerpolicy="no-referrer"
+  />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --primary:#ffffff;
+      --secondary:#f8f9fa;
+      --accent:#000000;
+      --text:#212529;
+      --light-text:#6c757d;
+      --border:#dee2e6;
+    }
+    html,body{height:100%}
+    body{
+      background:var(--secondary);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      padding-top:70px;
+    }
+    .navbar{
+      background:var(--primary);
+      box-shadow:0 2px 10px rgba(0,0,0,.08);
+      position:fixed;top:0;left:0;right:0;z-index:1030
+    }
+    .navbar-brand{font-weight:800;color:var(--accent)!important}
+
+    /* Sidebar (right) */
+    .sidebar{
+      background:var(--primary);
+      position:fixed;top:56px;right:0;bottom:0;
+      width:280px;padding:20px 0;
+      box-shadow:-2px 0 12px rgba(0,0,0,.08);
+      transform:translateX(100%);
+      transition:transform .3s ease;
+      z-index:1020;overflow-y:auto
+    }
+    .sidebar.show{transform:translateX(0)}
+    .sidebar .nav-link{
+      color:var(--text);padding:12px 20px;margin:5px 15px;border-radius:8px;transition:all .2s
+    }
+    .sidebar .nav-link:hover,.sidebar .nav-link.active{
+      background:var(--secondary);color:var(--accent)
+    }
+    .sidebar .nav-link i{margin-right:10px;width:20px;text-align:center}
+    .sidebar-backdrop{
+      position:fixed;top:56px;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);
+      z-index:1010;display:none
+    }
+
+    /* Main content rail */
+    .main-content{padding:20px;transition:margin-right .3s ease}
+    @media (min-width:992px){
+      .sidebar{transform:translateX(0)}
+      .sidebar-backdrop{display:none!important}
+      .main-content{margin-right:280px}
+      .navbar-toggler{display:none}
+    }
+
+    .section-title{border-bottom:2px solid var(--accent);padding-bottom:10px;margin-bottom:24px;font-weight:700}
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+      transition:transform .2s, box-shadow .2s
+    }
+    .card:hover{transform:translateY(-3px);box-shadow:0 10px 20px rgba(0,0,0,.06)}
+    .card-header{background:var(--primary);border-bottom:1px solid var(--border);font-weight:600;color:var(--accent)}
+    .stats-card{text-align:center;padding:22px}
+    .stats-number{font-size:2.1rem;font-weight:800;color:var(--accent);margin:8px 0}
+
+    .btn-primary{background:var(--accent);border-color:var(--accent)}
+    .btn-primary:hover{background:#333;border-color:#333}
+    .btn-outline-primary{color:var(--accent);border-color:var(--accent)}
+    .btn-outline-primary:hover{background:var(--accent);color:#fff}
+    .text-primary{color:var(--accent)!important}
+    .badge.bg-primary{background:var(--accent)!important}
+
+    .hidden{display:none!important}
+    .chart-container{position:relative;height:260px;width:100%}
+
+    .auth-container{
+      max-width:420px;margin:60px auto;padding:24px;background:#fff;border-radius:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,.06)
+    }
+
+    .table thead th{white-space:nowrap}
+    .table td, .table th{vertical-align:middle}
+
+    .toast-container{z-index:1080}
+    .cursor-pointer{cursor:pointer}
+  </style>
 </head>
 <body>
-    <!-- Enhanced Header -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-dumbbell"></i> FitnessTracker Pro
-            </a>
-            <button class="navbar-toggler" type="button" id="sidebarToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </nav>
-    
-    <!-- Enhanced Auth Section -->
-    <div id="auth-section" class="auth-container">
-        <div id="login-form-container">
-            <h2 class="auth-title">Welcome Back</h2>
-            <form id="login-form">
-                <div class="mb-4">
-                    <label class="form-label">Username</label>
-                    <input type="text" class="form-control" id="login-username" required>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control" id="login-password" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 mb-3">
-                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
-                </button>
-                <div class="text-center">
-                    <small class="text-muted">Don't have an account? 
-                        <a href="#" id="show-register" class="gradient-text fw-bold">Create one</a>
-                    </small>
-                </div>
-            </form>
-        </div>
-        
-        <div id="register-form-container" class="hidden">
-            <h2 class="auth-title">Join FitnessTracker Pro</h2>
-            <form id="register-form">
-                <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" class="form-control" id="register-username" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="register-email" required>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control" id="register-password" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 mb-3">
-                    <i class="fas fa-user-plus me-2"></i>Create Account
-                </button>
-                <div class="text-center">
-                    <small class="text-muted">Already have an account? 
-                        <a href="#" id="show-login" class="gradient-text fw-bold">Sign in</a>
-                    </small>
-                </div>
-            </form>
-        </div>
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#"><i class="fas fa-dumbbell"></i> FitnessTracker</a>
+      <button class="navbar-toggler ms-auto" type="button" id="sidebarToggle" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
     </div>
-    
-    <!-- Sidebar Backdrop -->
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-    
-    <!-- Enhanced Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="#" data-section="dashboard">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="exercises">
-                    <i class="fas fa-running"></i> Exercise Library
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="workouts">
-                    <i class="fas fa-dumbbell"></i> Workout Sessions
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="programs">
-                    <i class="fas fa-clipboard-list"></i> Training Programs
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="analytics">
-                    <i class="fas fa-chart-line"></i> Analytics
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-section="profile">
-                    <i class="fas fa-user"></i> Profile
-                </a>
-            </li>
-            <li class="nav-item mt-4">
-                <a class="nav-link text-danger" href="#" id="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </li>
-        </ul>
+  </nav>
+
+  <!-- Toasts Anchor -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" id="toastRegion"></div>
+
+  <!-- Auth Section -->
+  <div id="auth-section" class="auth-container">
+    <h3 class="text-center mb-3">Welcome back</h3>
+    <p class="text-center text-muted mb-4">Log in or create an account to continue.</p>
+
+    <!-- Login -->
+    <form id="login-form" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input id="login-username" type="text" class="form-control" required />
+        <div class="invalid-feedback">Please enter your username.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input id="login-password" type="password" class="form-control" required minlength="6"/>
+        <div class="invalid-feedback">Please enter your password (min 6 chars).</div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Log in</button>
+      <div class="text-center mt-3">
+        <small class="text-muted">No account? <a href="#" id="show-register">Register</a></small>
+      </div>
+    </form>
+
+    <!-- Register -->
+    <form id="register-form" class="hidden mt-2" novalidate>
+      <h4 class="mb-3">Create Account</h4>
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input id="register-username" type="text" class="form-control" required />
+        <div class="invalid-feedback">Username is required.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input id="register-email" type="email" class="form-control" required />
+        <div class="invalid-feedback">Valid email is required.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input id="register-password" type="password" class="form-control" required minlength="6" />
+        <div class="invalid-feedback">Password must be at least 6 characters.</div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Register</button>
+      <div class="text-center mt-3">
+        <small class="text-muted">Already have an account? <a href="#" id="show-login">Log in</a></small>
+      </div>
+    </form>
+  </div>
+
+  <!-- Sidebar Backdrop -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar Navigation">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link active" href="#" data-section="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-section="exercises"><i class="fas fa-running"></i> Exercises</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-section="workouts"><i class="fas fa-dumbbell"></i> Workouts</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-section="programs"><i class="fas fa-clipboard-list"></i> Programs</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-section="analytics"><i class="fas fa-chart-line"></i> Analytics</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" data-section="profile"><i class="fas fa-user"></i> Profile</a>
+      </li>
+      <li class="nav-item mt-4">
+        <a class="nav-link text-danger cursor-pointer" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main App -->
+  <main id="app-section" class="main-content hidden">
+    <!-- Dashboard -->
+    <section id="dashboard-section">
+      <h2 class="section-title">Dashboard Overview</h2>
+
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <div class="card stats-card">
+            <i class="fas fa-weight fa-2x"></i>
+            <h6 class="mt-1 mb-0">Current Weight</h6>
+            <div class="stats-number" id="current-weight">--</div>
+            <small class="text-muted">kg</small>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card stats-card">
+            <i class="fas fa-heart fa-2x"></i>
+            <h6 class="mt-1 mb-0">BMI</h6>
+            <div class="stats-number" id="current-bmi">--</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card stats-card">
+            <i class="fas fa-calendar-check fa-2x"></i>
+            <h6 class="mt-1 mb-0">Workouts This Month</h6>
+            <div class="stats-number" id="workout-count">--</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card stats-card">
+            <i class="fas fa-list-alt fa-2x"></i>
+            <h6 class="mt-1 mb-0">Exercises</h6>
+            <div class="stats-number" id="exercise-count">--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3 g-3">
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-header"><h5 class="mb-0">Weight History</h5></div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="weight-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header"><h5 class="mb-0">Recent Workouts</h5></div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush" id="recent-workouts">
+                <li class="list-group-item text-center">Loading…</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card mt-3">
+            <div class="card-header"><h5 class="mb-0">Quick Actions</h5></div>
+            <div class="card-body">
+              <button class="btn btn-outline-primary w-100 mb-2" data-section="workouts">
+                <i class="fas fa-plus"></i> Log Workout
+              </button>
+              <button class="btn btn-outline-primary w-100 mb-2" data-section="exercises">
+                <i class="fas fa-running"></i> Add Exercise
+              </button>
+              <button class="btn btn-outline-primary w-100" data-section="profile">
+                <i class="fas fa-user"></i> Update Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Exercises -->
+    <section id="exercises-section" class="hidden">
+      <h2 class="section-title">Exercise Management</h2>
+      <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+        <div class="btn-group">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exerciseModal" data-mode="add">
+            <i class="fas fa-plus"></i> Add Exercise
+          </button>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <input id="exercise-search" class="form-control" style="min-width:260px" placeholder="Search exercises…"/>
+          <button class="btn btn-outline-primary" id="exercise-refresh"><i class="fas fa-rotate"></i></button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="exercises-table">
+            <tr><td colspan="4" class="text-center">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Workouts -->
+    <section id="workouts-section" class="hidden">
+      <h2 class="section-title">Workout Sessions</h2>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#workoutModal" data-mode="add">
+          <i class="fas fa-plus"></i> Add Workout
+        </button>
+        <button class="btn btn-outline-primary" id="workout-refresh"><i class="fas fa-rotate"></i></button>
+      </div>
+      <div class="card">
+        <div class="card-header"><h5 class="mb-0">Your Sessions</h5></div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Program</th>
+                  <th>Duration</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sessions-table">
+                <tr><td colspan="4" class="text-center">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Programs -->
+    <section id="programs-section" class="hidden">
+      <h2 class="section-title">Exercise Programs</h2>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#programModal" data-mode="add">
+          <i class="fas fa-plus"></i> Create Program
+        </button>
+        <button class="btn btn-outline-primary" id="program-refresh"><i class="fas fa-rotate"></i></button>
+      </div>
+      <div class="row g-3" id="programs-list">
+        <div class="col-12 text-center">Loading…</div>
+      </div>
+    </section>
+
+    <!-- Analytics -->
+    <section id="analytics-section" class="hidden">
+      <h2 class="section-title">Analytics & Progress</h2>
+      <ul class="nav nav-tabs mb-3" id="analyticsTabs" role="tablist">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabWeight" role="tab">Weight</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabBMI" role="tab">BMI</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabExercise" role="tab">Exercise Progress</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="tabWeight" role="tabpanel">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Weight Progress</h5>
+              <canvas id="weightProgressChart" height="150"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tabBMI" role="tabpanel">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">BMI History</h5>
+              <canvas id="bmiChart" height="150"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tabExercise" role="tabpanel">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Exercise Progress</h5>
+              <div class="mb-3">
+                <select class="form-select" id="exerciseSelect">
+                  <option value="">Select an exercise</option>
+                </select>
+              </div>
+              <canvas id="exerciseProgressChart" height="150"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Profile -->
+    <section id="profile-section" class="hidden">
+      <h2 class="section-title">Profile Management</h2>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header"><h5 class="mb-0">Current Profile</h5></div>
+            <div class="card-body" id="current-profile">
+              <div class="text-center text-muted">Loading…</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header"><h5 class="mb-0">Update Profile</h5></div>
+            <div class="card-body">
+              <form id="profile-form" novalidate>
+                <div class="mb-3">
+                  <label class="form-label">Height (cm)</label>
+                  <input type="number" class="form-control" id="profile-height" min="50" max="260"/>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Weight (kg)</label>
+                  <input type="number" class="form-control" id="profile-weight" min="20" max="400"/>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Location</label>
+                  <input type="text" class="form-control" id="profile-location"/>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Birth Date</label>
+                  <input type="date" class="form-control" id="profile-birthdate"/>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-header"><h5 class="mb-0">Profile History</h5></div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Weight</th>
+                  <th>Height</th>
+                  <th>BMI</th>
+                  <th>Location</th>
+                </tr>
+              </thead>
+              <tbody id="profile-history">
+                <tr><td colspan="5" class="text-center">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== Modals ===================== -->
+
+  <!-- Exercise Modal (Add/Edit) -->
+  <div class="modal fade" id="exerciseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="modal-content" id="exerciseForm" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title" id="exerciseModalTitle">Add Exercise</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="exerciseId"/>
+          <div class="mb-3">
+            <label class="form-label">Exercise Name</label>
+            <input type="text" class="form-control" id="exerciseName" required />
+            <div class="invalid-feedback">Name is required.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <input type="text" class="form-control" id="exerciseCategory" required />
+            <div class="invalid-feedback">Category is required.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description (optional)</label>
+            <textarea class="form-control" id="exerciseDescription" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit" id="exerciseSaveBtn">Save</button>
+        </div>
+      </form>
     </div>
-    
-    <!-- Main Content -->
-    <div id="app-section" class="main-content hidden">
-        <!-- Enhanced Dashboard Section -->
-        <div id="dashboard-section">
-            <h2 class="section-title">Dashboard Overview</h2>
-            
-            <div class="row g-4">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card stats-card">
-                        <i class="fas fa-weight"></i>
-                        <h5 class="stats-label">Current Weight</h5>
-                        <div class="stats-number" id="current-weight">--</div>
-                        <small class="text-muted">kg</small>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card stats-card">
-                        <i class="fas fa-heart"></i>
-                        <h5 class="stats-label">BMI Index</h5>
-                        <div class="stats-number" id="current-bmi">--</div>
-                        <small class="text-muted" id="bmi-status">Status</small>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card stats-card">
-                        <i class="fas fa-calendar-check"></i>
-                        <h5 class="stats-label">This Month</h5>
-                        <div class="stats-number" id="workout-count">--</div>
-                        <small class="text-muted">workouts</small>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card stats-card">
-                        <i class="fas fa-trophy"></i>
-                        <h5 class="stats-label">Total Exercises</h5>
-                        <div class="stats-number" id="exercise-count">--</div>
-                        <small class="text-muted">exercises</small>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row g-4 mt-4">
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Weight Progress</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="chart-container">
-                                <canvas id="weight-chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
-                        </div>
-                        <div class="card-body">
-                            <ul class="list-group list-group-flush" id="recent-workouts">
-                                <li class="list-group-item text-center">
-                                    <div class="spinner"></div>
-                                    Loading workouts...
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row g-4 mt-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-rocket me-2"></i>Quick Actions</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-primary w-100" data-section="workouts">
-                                        <i class="fas fa-plus-circle me-2"></i>Log Workout
-                                    </button>
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-primary w-100" data-section="exercises">
-                                        <i class="fas fa-running me-2"></i>Add Exercise
-                                    </button>
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-primary w-100" data-section="programs">
-                                        <i class="fas fa-clipboard-list me-2"></i>Create Program
-                                    </button>
-                                </div>
-                                <div class="col-md-3">
-                                    <button class="btn btn-outline-primary w-100" data-section="profile">
-                                        <i class="fas fa-user-edit me-2"></i>Update Profile
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  </div>
+
+  <!-- Program Modal (Add/Edit) -->
+  <div class="modal fade" id="programModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="modal-content" id="programForm" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title" id="programModalTitle">Create Program</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        
-        <!-- Exercise Management Section -->
-        <div id="exercises-section" class="hidden">
-            <h2 class="section-title">Exercise Library</h2>
-            <div class="row g-3 mb-4">
-                <div class="col-auto">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExerciseModal">
-                        <i class="fas fa-plus me-2"></i>Add New Exercise
-                    </button>
-                </div>
-                <div class="col">
-                    <input type="text" class="form-control" placeholder="Search exercises..." id="exercise-search">
-                </div>
-                <div class="col-auto">
-                    <select class="form-select" id="category-filter">
-                        <option value="">All Categories</option>
-                        <option value="strength">Strength</option>
-                        <option value="cardio">Cardio</option>
-                        <option value="flexibility">Flexibility</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th><i class="fas fa-dumbbell me-2"></i>Exercise</th>
-                                    <th><i class="fas fa-tags me-2"></i>Category</th>
-                                    <th><i class="fas fa-info-circle me-2"></i>Description</th>
-                                    <th><i class="fas fa-cogs me-2"></i>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="exercises-table">
-                                <tr><td colspan="4" class="text-center"><div class="spinner"></div>Loading exercises...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <div class="modal-body">
+          <input type="hidden" id="programId"/>
+          <div class="mb-3">
+            <label class="form-label">Program Name</label>
+            <input type="text" class="form-control" id="programName" required />
+            <div class="invalid-feedback">Name is required.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description (optional)</label>
+            <textarea class="form-control" id="programDescription" rows="3"></textarea>
+          </div>
         </div>
-        
-        <!-- Workout Sessions Section -->
-        <div id="workouts-section" class="hidden">
-            <h2 class="section-title">Workout Sessions</h2>
-            <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addWorkoutModal">
-                <i class="fas fa-plus me-2"></i>Log New Session
-            </button>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Your Training Sessions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th><i class="fas fa-calendar me-2"></i>Date</th>
-                                    <th><i class="fas fa-clipboard-list me-2"></i>Program</th>
-                                    <th><i class="fas fa-clock me-2"></i>Duration</th>
-                                    <th><i class="fas fa-fire me-2"></i>Intensity</th>
-                                    <th><i class="fas fa-cogs me-2"></i>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sessions-table">
-                                <tr><td colspan="5" class="text-center"><div class="spinner"></div>Loading sessions...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit" id="programSaveBtn">Save</button>
         </div>
-        
-        <!-- Programs Section -->
-        <div id="programs-section" class="hidden">
-            <h2 class="section-title">Training
+      </form>
+    </div>
+  </div>
+
+  <!-- Workout Modal (Add/Edit) -->
+  <div class="modal fade" id="workoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="modal-content" id="workoutForm" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title" id="workoutModalTitle">Add Workout</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="workoutId"/>
+          <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" id="workoutDate" required />
+            <div class="invalid-feedback">Date is required.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Program</label>
+            <select class="form-select" id="workoutProgram">
+              <option value="">No program</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Duration (minutes)</label>
+            <input type="number" class="form-control" id="workoutDuration" min="5" step="5" required />
+            <div class="invalid-feedback">Duration is required.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes (optional)</label>
+            <textarea id="workoutNotes" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit" id="workoutSaveBtn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== Scripts ===================== -->
+
+  <!-- Bootstrap Bundle (with Popper) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
+
+  <script>
+    /* ============================================================
+       Utilities & Globals
+       ============================================================ */
+    const API_BASE = 'https://nasiruos.pythonanywhere.com/api';
+
+    // Quick DOM helpers
+    const qs  = (sel, el=document) => el.querySelector(sel);
+    const qsa = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+    // Auth state
+    let accessToken = localStorage.getItem('accessToken') || null;
+    let refreshToken = localStorage.getItem('refreshToken') || null;
+    let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+    // Chart instances holder to safely destroy before re-render
+    const charts = {};
+
+    // Bootstrap modal instances cache
+    const modals = {
+      exercise: null,
+      program: null,
+      workout: null
+    };
+
+    // Bootstrap toasts
+    function toast(msg, type='info'){
+      const id = 't' + crypto.randomUUID();
+      const color = type === 'success' ? 'bg-success text-white'
+                  : type === 'error'   ? 'bg-danger text-white'
+                  : type === 'warning' ? 'bg-warning text-dark'
+                  : 'bg-primary text-white';
+      const el = document.createElement('div');
+      el.className = `toast align-items-center ${color} border-0`;
+      el.id = id;
+      el.role = 'alert';
+      el.ariaLive = 'assertive';
+      el.ariaAtomic = 'true';
+      el.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${msg}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>`;
+      qs('#toastRegion').appendChild(el);
+      const t = new bootstrap.Toast(el, { delay: 4000 });
+      t.show();
+      el.addEventListener('hidden.bs.toast', ()=> el.remove());
+    }
+
+    // Confirm dialog (Bootstrap modal replacement with native confirm)
+    async function confirmDialog(message){
+      return window.confirm(message);
+    }
+
+    // Format helpers
+    const fmtDate = (s) => {
+      const d = new Date(s);
+      return isNaN(d) ? '-' : d.toLocaleDateString();
+    };
+
+    /* ============================================================
+       API Wrapper with JWT & Auto-Refresh
+       ============================================================ */
+    async function api(url, { method='GET', data=null, headers={} } = {}){
+      const opts = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers
+        }
+      };
+      if(accessToken){
+        opts.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      if(data !== null){
+        opts.body = JSON.stringify(data);
+      }
+
+      let res = await fetch(API_BASE + url, opts);
+
+      // On 401, try refresh once then retry original
+      if(res.status === 401 && refreshToken){
+        const refreshed = await refreshAccessToken();
+        if(refreshed){
+          opts.headers.Authorization = `Bearer ${accessToken}`;
+          res = await fetch(API_BASE + url, opts);
+        }else{
+          // If refresh fails, logout
+          doLogout();
+          throw new Error('Unauthorized');
+        }
+      }
+
+      if(!res.ok){
+        let errText = 'Request failed';
+        try {
+          const msg = await res.json();
+          errText = (msg && (msg.detail || JSON.stringify(msg)));
+        } catch(e){}
+        throw new Error(errText);
+      }
+      // Some endpoints may return 204 No Content
+      if(res.status === 204) return null;
+      return res.json();
+    }
+
+    async function refreshAccessToken(){
+      try{
+        const res = await fetch(`${API_BASE}/accounts/token/refresh/`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ refresh: refreshToken })
+        });
+        if(!res.ok) return false;
+        const data = await res.json();
+        accessToken = data.access;
+        localStorage.setItem('accessToken', accessToken);
+        return true;
+      }catch(_){
+        return false;
+      }
+    }
+
+    /* ============================================================
+       Auth: Login / Register / Logout
+       ============================================================ */
+    async function handleLogin(e){
+      e.preventDefault();
+      const form = e.currentTarget;
+      form.classList.add('was-validated');
+      if(!form.checkValidity()) return;
+
+      const username = qs('#login-username').value.trim();
+      const password = qs('#login-password').value;
+
+      try{
+        const data = await api('/accounts/login/', {
+          method:'POST',
+          data:{ username, password },
+          headers:{ Authorization: undefined } // ensure no stale token header
+        });
+        accessToken = data.access;
+        refreshToken = data.refresh;
+        currentUser = { username };
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+        toast('Logged in successfully','success');
+        showApp();
+        await onAppMounted();
+      }catch(err){
+        toast(err.message || 'Login failed','error');
+      }
+    }
+
+    async function handleRegister(e){
+      e.preventDefault();
+      const form = e.currentTarget;
+      form.classList.add('was-validated');
+      if(!form.checkValidity()) return;
+      const username = qs('#register-username').value.trim();
+      const email = qs('#register-email').value.trim();
+      const password = qs('#register-password').value;
+
+      try{
+        await api('/accounts/register/',{
+          method:'POST',
+          data:{ username, email, password },
+          headers:{ Authorization: undefined }
+        });
+        toast('Registration successful! Please log in.','success');
+        showLoginForm();
+        qs('#register-form').reset();
+        qs('#login-username').value = username;
+      }catch(err){
+        toast(err.message || 'Registration failed','error');
+      }
+    }
+
+    function doLogout(){
+      accessToken = null;
+      refreshToken = null;
+      currentUser = null;
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('currentUser');
+      toast('Logged out','success');
+      showAuth();
+    }
+
+    /* ============================================================
+       App Navigation + Section Loader
+       ============================================================ */
+    function showAuth(){
+      qs('#auth-section').classList.remove('hidden');
+      qs('#app-section').classList.add('hidden');
+    }
+    function showApp(){
+      qs('#auth-section').classList.add('hidden');
+      qs('#app-section').classList.remove('hidden');
+    }
+    function setActiveNav(section){
+      qsa('.sidebar .nav-link').forEach(a => a.classList.toggle('active', a.dataset.section===section));
+    }
+    async function showSection(section){
+      // Toggle section visibility
+      const sections = ['dashboard','exercises','workouts','programs','analytics','profile'];
+      sections.forEach(s => qs(`#${s}-section`).classList.toggle('hidden', s!==section));
+      setActiveNav(section);
+
+      // Load data for the section
+      try{
+        if(section==='dashboard') await loadDashboard();
+        if(section==='exercises') await loadExercises();
+        if(section==='workouts') await loadWorkouts();
+        if(section==='programs') await loadPrograms();
+        if(section==='analytics') await loadAnalytics();
+        if(section==='profile') await loadProfile();
+      }catch(e){
+        toast(e.message || `Failed loading ${section}`,'error');
+      }
+
+      // On mobile, hide sidebar after click
+      if(window.innerWidth < 992){ hideSidebar(); }
+    }
+
+    // Sidebar controls
+    function toggleSidebar(){
+      qs('#sidebar').classList.toggle('show');
+      qs('#sidebarBackdrop').style.display = qs('#sidebar').classList.contains('show') ? 'block' : 'none';
+    }
+    function hideSidebar(){
+      qs('#sidebar').classList.remove('show');
+      qs('#sidebarBackdrop').style.display = 'none';
+    }
+
+    /* ============================================================
+       Dashboard Loader
+       ============================================================ */
+    async function loadDashboard(){
+      // Profile (weight/BMI)
+      try{
+        const profile = await api('/accounts/profile/current/');
+        const weight = profile?.weight ?? '--';
+        qs('#current-weight').textContent = weight;
+        if(profile?.weight && profile?.height){
+          const bmi = profile.weight / Math.pow(profile.height/100, 2);
+          qs('#current-bmi').textContent = bmi.toFixed(1);
+        }else{
+          qs('#current-bmi').textContent = '--';
+        }
+      }catch(_){
+        qs('#current-weight').textContent = '--';
+        qs('#current-bmi').textContent = '--';
+      }
+
+      // Workouts this month + Recent workouts
+      try{
+        const sessions = await api('/workouts/sessions/');
+        const now = new Date();
+        const thisMonth = now.getMonth();
+        const thisYear = now.getFullYear();
+        const monthSessions = sessions.filter(s => {
+          const d = new Date(s.date);
+          return d.getMonth()===thisMonth && d.getFullYear()===thisYear;
+        });
+        qs('#workout-count').textContent = monthSessions.length;
+
+        // Recent list
+        const list = qs('#recent-workouts');
+        list.innerHTML = '';
+        const recent = sessions.slice(0,5);
+        if(recent.length===0){
+          list.innerHTML = '<li class="list-group-item text-center">No workouts yet</li>';
+        }else{
+          recent.forEach(s=>{
+            const li = document.createElement('li');
+            li.className='list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
+              <div>
+                <strong>${fmtDate(s.date)}</strong>
+                <div class="text-muted small">${s.program_name || s.program?.name || 'No program'}</div>
+              </div>
+              <span class="badge bg-primary rounded-pill">${s.duration} min</span>
+            `;
+            list.appendChild(li);
+          });
+        }
+      }catch(_){
+        qs('#workout-count').textContent='--';
+      }
+
+      // Exercise count
+      try{
+        const exercises = await api('/exercises/');
+        qs('#exercise-count').textContent = exercises.length;
+      }catch(_){
+        qs('#exercise-count').textContent='--';
+      }
+
+      // Weight chart (profile history)
+      try{
+        const history = await api('/accounts/profile/history/');
+        const labels = history.map(p => fmtDate(p.created_at));
+        const weights = history.map(p => p.weight).filter(v => v!==null && v!==undefined);
+        drawLineChart('weight-chart','weightChart',{
+          labels,
+          datasets:[{ label:'Weight (kg)', data: history.map(p=>p.weight), fill:true }]
+        });
+      }catch(_){}
+    }
+
+    /* ============================================================
+       Exercises CRUD
+       ============================================================ */
+    async function loadExercises(){
+      const tbody = qs('#exercises-table');
+      tbody.innerHTML = `<tr><td colspan="4" class="text-center">Loading…</td></tr>`;
+      try{
+        const data = await api('/exercises/');
+        renderExerciseRows(data);
+      }catch(e){
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error loading exercises</td></tr>`;
+      }
+    }
+
+    function renderExerciseRows(exercises){
+      const tbody = qs('#exercises-table');
+      const search = qs('#exercise-search').value.trim().toLowerCase();
+      const filtered = !search ? exercises : exercises.filter(x =>
+        (x.name||'').toLowerCase().includes(search) ||
+        (x.category||'').toLowerCase().includes(search) ||
+        (x.description||'').toLowerCase().includes(search)
+      );
+      if(filtered.length===0){
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center">No exercises found</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = '';
+      filtered.forEach(ex=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${ex.name||'-'}</td>
+          <td>${ex.category||'-'}</td>
+          <td>${ex.description||''}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-primary me-1" data-action="edit-exercise" data-id="${ex.id}"><i class="fas fa-pen"></i></button>
+            <button class="btn btn-sm btn-outline-danger" data-action="delete-exercise" data-id="${ex.id}"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      // Fill exercise select for analytics
+      const sel = qs('#exerciseSelect');
+      sel.innerHTML = '<option value="">Select an exercise</option>';
+      filtered.forEach(ex=>{
+        const opt = document.createElement('option');
+        opt.value = ex.id;
+        opt.textContent = ex.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function upsertExercise(e){
+      e.preventDefault();
+      const form = e.currentTarget;
+      form.classList.add('was-validated');
+      if(!form.checkValidity()) return;
+
+      const id = qs('#exerciseId').value || null;
+      const payload = {
+        name: qs('#exerciseName').value.trim(),
+        category: qs('#exerciseCategory').value.trim(),
+        description: qs('#exerciseDescription').value.trim()
+      };
+
+      try{
+        if(id){
+          await api(`/exercises/${id}/`,{ method:'PUT', data:payload });
+          toast('Exercise updated','success');
+        }else{
+          await api('/exercises/',{ method:'POST', data:payload });
+          toast('Exercise created','success');
+        }
+        bootstrap.Modal.getInstance(qs('#exerciseModal')).hide();
+        await loadExercises();
+      }catch(err){
+        toast(err.message || 'Save failed','error');
+      }
+    }
+
+    async function editExercise(id){
+      try{
+        const ex = await api(`/exercises/${id}/`);
+        qs('#exerciseId').value = ex.id;
+        qs('#exerciseName').value = ex.name || '';
+        qs('#exerciseCategory').value = ex.category || '';
+        qs('#exerciseDescription').value = ex.description || '';
+        qs('#exerciseModalTitle').textContent = 'Edit Exercise';
+        modals.exercise.show();
+      }catch(err){
+        toast('Failed to load exercise','error');
+      }
+    }
+
+    async function deleteExercise(id){
+      const ok = await confirmDialog('Delete this exercise? This cannot be undone.');
+      if(!ok) return;
+      try{
+        await api(`/exercises/${id}/`,{ method:'DELETE' });
+        toast('Exercise deleted','success');
+        await loadExercises();
+      }catch(err){
+        toast('Delete failed','error');
+      }
+    }
+
+    /* ============================================================
+       Programs CRUD
+       ============================================================ */
+    async function loadPrograms(){
+      const grid = qs('#programs-list');
+      grid.innerHTML = `<div class="col-12 text-center">Loading…</div>`;
+      try{
+        const data = await api('/programs/');
+        if(!data.length){
+          grid.innerHTML = `<div class="col-12 text-center">No programs found</div>`;
+          return;
+        }
+        grid.innerHTML = '';
+        data.forEach(p=>{
+          const col = document.createElement('div');
+          col.className = 'col-md-6';
+          col.innerHTML = `
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">${p.name||'-'}</h5>
+                <p class="card-text text-muted">${p.description||'No description'}</p>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-primary" data-action="edit-program" data-id="${p.id}">
+                    <i class="fas fa-pen"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" data-action="delete-program" data-id="${p.id}">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </div>
+              </div>
+            </div>`;
+          grid.appendChild(col);
+        });
+
+        // Also populate program select for workouts
+        const select = qs('#workoutProgram');
+        select.innerHTML = `<option value="">No program</option>`;
+        data.forEach(p=>{
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.name;
+          select.appendChild(opt);
+        });
+      }catch(e){
+        grid.innerHTML = `<div class="col-12 text-center text-danger">Error loading programs</div>`;
+      }
+    }
+
+    async function upsertProgram(e){
+      e.preventDefault();
+      const form = e.currentTarget;
+      form.classList.add('was-validated');
+      if(!form.checkValidity()) return;
+
+      const id = qs('#programId').value || null;
+      const payload = {
+        name: qs('#programName').value.trim(),
+        description: qs('#programDescription').value.trim()
+      };
+
+      try{
+        if(id){
+          await api(`/programs/${id}/`,{ method:'PUT', data:payload });
+          toast('Program updated','success');
+        }else{
+          await api('/programs/',{ method:'POST', data:payload });
+          toast('Program created','success');
+        }
+        bootstrap.Modal.getInstance(qs('#programModal')).hide();
+        await loadPrograms();
+      }catch(err){
+        toast(err.message || 'Save failed','error');
+      }
+    }
+
+    async function editProgram(id){
+      try{
+        const p = await api(`/programs/${id}/`);
+        qs('#programId').value = p.id;
+        qs('#programName').value = p.name || '';
+        qs('#programDescription').value = p.description || '';
+        qs('#programModalTitle').textContent = 'Edit Program';
+        modals.program.show();
+      }catch(err){
+        toast('Failed to load program','error');
+      }
+    }
+
+    async function deleteProgram(id){
+      const ok = await confirmDialog('Delete this program? This cannot be undone.');
+      if(!ok) return;
+      try{
+        await api(`/programs/${id}/`,{ method:'DELETE' });
+        toast('Program deleted','success');
+        await Promise.all([loadPrograms(), loadWorkouts()]);
+      }catch(err){
+        toast('Delete failed','error');
+      }
+    }
+
+    /* ============================================================
+       Workouts CRUD
+       ============================================================ */
+    async function loadWorkouts(){
+      const tbody = qs('#sessions-table');
+      tbody.innerHTML = `<tr><td colspan="4" class="text-center">Loading…</td></tr>`;
+      try{
+        const data = await api('/workouts/sessions/');
+        if(!data.length){
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center">No workout sessions found</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = '';
+        data.forEach(w=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${fmtDate(w.date)}</td>
+            <td>${w.program_name || w.program?.name || 'No program'}</td>
+            <td>${w.duration} minutes</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-primary me-1" data-action="edit-workout" data-id="${w.id}">
+                <i class="fas fa-pen"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" data-action="delete-workout" data-id="${w.id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      }catch(e){
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error loading sessions</td></tr>`;
+      }
+    }
+
+    async function upsertWorkout(e){
+      e.preventDefault();
+      const form = e.currentTarget;
+      form.classList.add('was-validated');
+      if(!form.checkValidity()) return;
+
+      const id = qs('#workoutId').value || null;
+      const payload = {
+        date: qs('#workoutDate').value,
+        duration: Number(qs('#workoutDuration').value),
+        program: qs('#workoutProgram').value || null,
+        notes: qs('#workoutNotes').value.trim()
+      };
+
+      try{
+        if(id){
+          await api(`/workouts/sessions/${id}/`,{ method:'PUT', data:payload });
+          toast('Workout updated','success');
+        }else{
+          await api('/workouts/sessions/',{ method:'POST', data:payload });
+          toast('Workout created','success');
+        }
+        bootstrap.Modal.getInstance(qs('#workoutModal')).hide();
+        await Promise.all([loadWorkouts(), loadDashboard(), loadAnalytics()]);
+      }catch(err){
+        toast(err.message || 'Save failed','error');
+      }
+    }
+
+    async function editWorkout(id){
+      try{
+        const w = await api(`/workouts/sessions/${id}/`);
+        qs('#workoutId').value = w.id;
+        qs('#workoutDate').value = (w.date || '').slice(0,10);
+        qs('#workoutDuration').value = w.duration || '';
+        const programId = w.program?.id || w.program || '';
+        qs('#workoutProgram').value = programId || '';
+        qs('#workoutNotes').value = w.notes || '';
+        qs('#workoutModalTitle').textContent = 'Edit Workout';
+        modals.workout.show();
+      }catch(err){
+        toast('Failed to load workout','error');
+      }
+    }
+
+    async function deleteWorkout(id){
+      const ok = await confirmDialog('Delete this workout? This cannot be undone.');
+      if(!ok) return;
+      try{
+        await api(`/workouts/sessions/${id}/`,{ method:'DELETE' });
+        toast('Workout deleted','success');
+        await Promise.all([loadWorkouts(), loadDashboard(), loadAnalytics()]);
+      }catch(err){
+        toast('Delete failed','error');
+      }
+    }
+
+    /* ============================================================
+       Profile (current + update + history)
+       ============================================================ */
+    async function loadProfile(){
+      // Current profile
+      try{
+        const p = await api('/accounts/profile/current/');
+        qs('#profile-height').value = p.height ?? '';
+        qs('#profile-weight').value = p.weight ?? '';
+        qs('#profile-location').value = p.location ?? '';
+        qs('#profile-birthdate').value = (p.birth_date || '').slice(0,10);
+
+        let bmi = '--';
+        if(p.weight && p.height){
+          bmi = (p.weight / Math.pow(p.height/100,2)).toFixed(1);
+        }
+        qs('#current-profile').innerHTML = `
+          <div class="row mb-2">
+            <div class="col-4 fw-bold">Username:</div><div class="col-8">${currentUser?.username || '-'}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-4 fw-bold">Height:</div><div class="col-8">${p.height ?? '--'} cm</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-4 fw-bold">Weight:</div><div class="col-8">${p.weight ?? '--'} kg</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-4 fw-bold">BMI:</div><div class="col-8">${bmi}</div>
+          </div>
+          <div class="row">
+            <div class="col-4 fw-bold">Location:</div><div class="col-8">${p.location ?? '--'}</div>
+          </div>`;
+      }catch(_){
+        qs('#current-profile').innerHTML = `<p class="text-center text-danger">Error loading profile</p>`;
+      }
+
+      // History table
+      try{
+        const hist = await api('/accounts/profile/history/');
+        const tbody = qs('#profile-history');
+        if(!hist.length){
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center">No profile history found</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = '';
+        hist.forEach(p=>{
+          let bmi = '--';
+          if(p.weight && p.height){
+            bmi = (p.weight / Math.pow(p.height/100,2)).toFixed(1);
+          }
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${fmtDate(p.created_at)}</td>
+            <td>${p.weight ?? '--'}</td>
+            <td>${p.height ?? '--'}</td>
+            <td>${bmi}</td>
+            <td>${p.location ?? '--'}</td>`;
+          tbody.appendChild(tr);
+        });
+      }catch(_){
+        qs('#profile-history').innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error loading history</td></tr>`;
+      }
+    }
+
+    async function updateProfile(e){
+      e.preventDefault();
+      const data = {
+        height: toNumOrNull(qs('#profile-height').value),
+        weight: toNumOrNull(qs('#profile-weight').value),
+        location: qs('#profile-location').value.trim() || null,
+        birth_date: qs('#profile-birthdate').value || null
+      };
+      try{
+        await api('/accounts/profile/current/', { method:'PUT', data });
+        toast('Profile updated','success');
+        await Promise.all([loadProfile(), loadDashboard(), loadAnalytics()]);
+      }catch(err){
+        toast('Update failed','error');
+      }
+    }
+    const toNumOrNull = v => {
+      if(v===undefined || v===null) return null;
+      const n = Number(v);
+      return isNaN(n) ? null : n;
+    };
+
+    /* ============================================================
+       Analytics
+       ============================================================ */
+    async function loadAnalytics(){
+      // Weight / BMI from profile history
+      try{
+        const hist = await api('/accounts/profile/history/');
+        const labels = hist.map(h => fmtDate(h.created_at));
+        const weights = hist.map(h => h.weight ?? null);
+        const bmis = hist.map(h => (h.weight && h.height) ? (h.weight / Math.pow(h.height/100,2)) : null);
+
+        drawLineChart('weightProgressChart','analyticsWeight',{ labels, datasets:[{ label:'Weight (kg)', data:weights, fill:true }] });
+        drawLineChart('bmiChart','analyticsBMI',{ labels, datasets:[{ label:'BMI', data:bmis, fill:true }] });
+      }catch(_){}
+
+      // Exercise progress requires sessions; we group durations by exercise if backend provides it.
+      // Fallback: we chart workout duration over time if per-exercise data is not available.
+      try{
+        const sessions = await api('/workouts/sessions/');
+        // Populate exercise select (from exercises list)
+        const exercises = await api('/exercises/');
+        const select = qs('#exerciseSelect');
+        const cur = select.value;
+        select.innerHTML = '<option value="">Select an exercise</option>';
+        exercises.forEach(ex=>{
+          const opt = document.createElement('option');
+          opt.value = ex.id;
+          opt.textContent = ex.name;
+          select.appendChild(opt);
+        });
+        if(cur) select.value = cur;
+
+        // Default chart: total workout duration over time
+        const labels = sessions.map(s => fmtDate(s.date));
+        const durations = sessions.map(s => s.duration);
+        drawLineChart('exerciseProgressChart','analyticsExercise',{
+          labels,
+          datasets:[{ label:'Workout Duration (min)', data:durations, fill:true }]
+        });
+      }catch(_){}
+    }
+
+    // When an exercise is selected for analytics, try to fetch per-exercise progress if available
+    async function onExerciseSelectChange(){
+      const id = qs('#exerciseSelect').value;
+      if(!id){
+        await loadAnalytics();
+        return;
+      }
+      try{
+        // Try an optional endpoint (if exists) like /exercises/{id}/progress/
+        const prog = await api(`/exercises/${id}/progress/`).catch(()=>null);
+        if(prog && Array.isArray(prog.points) && prog.points.length){
+          const labels = prog.points.map(p=>fmtDate(p.date));
+          const values = prog.points.map(p=>p.value);
+          drawLineChart('exerciseProgressChart','analyticsExercise',{
+            labels,
+            datasets:[{ label:prog.label || 'Progress', data:values, fill:true }]
+          });
+        }else{
+          // Fallback: filter sessions containing that exercise if backend embeds that relation
+          const sessions = await api('/workouts/sessions/');
+          // Heuristic: if session.exercises exists, filter by exercise id
+          const filtered = sessions.filter(s => Array.isArray(s.exercises) && s.exercises.some(e => (e.id||e) == id));
+          if(filtered.length){
+            const labels = filtered.map(s=>fmtDate(s.date));
+            const mins = filtered.map(s=>s.duration);
+            drawLineChart('exerciseProgressChart','analyticsExercise',{
+              labels, datasets:[{ label:'Duration (min)', data:mins, fill:true }]
+            });
+          }else{
+            // Nothing specific found; show info
+            drawLineChart('exerciseProgressChart','analyticsExercise',{
+              labels:[], datasets:[{ label:'No data for this exercise', data:[], fill:true }]
+            });
+          }
+        }
+      }catch(_){
+        drawLineChart('exerciseProgressChart','analyticsExercise',{
+          labels:[], datasets:[{ label:'No data', data:[], fill:true }]
+        });
+      }
+    }
+
+    /* ============================================================
+       Charts
+       ============================================================ */
+    function drawLineChart(canvasId, key, { labels, datasets }){
+      const ctx = qs(`#${canvasId}`).getContext('2d');
+      if(charts[key]){
+        charts[key].destroy();
+      }
+      charts[key] = new Chart(ctx,{
+        type:'line',
+        data:{ labels, datasets: datasets.map(ds => ({
+          ...ds,
+          borderColor:'#000000',
+          backgroundColor:'rgba(0,0,0,0.1)',
+          tension:0.35
+        }))},
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          scales:{
+            y:{ beginAtZero:false, grid:{ color:'rgba(0,0,0,0.08)'} },
+            x:{ grid:{ display:false } }
+          },
+          plugins:{ legend:{ display:false } }
+        }
+      });
+    }
+
+    /* ============================================================
+       App Boot: Event Bindings
+       ============================================================ */
+    async function onAppMounted(){
+      // Modals
+      modals.exercise = new bootstrap.Modal('#exerciseModal');
+      modals.program  = new bootstrap.Modal('#programModal');
+      modals.workout  = new bootstrap.Modal('#workoutModal');
+
+      // Default to dashboard
+      await showSection('dashboard');
+    }
+
+    // DOM Ready
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      // Restore session if tokens exist
+      if(accessToken && currentUser){
+        showApp();
+        await onAppMounted();
+      }else{
+        showAuth();
+      }
+
+      // Header / Sidebar toggles
+      qs('#sidebarToggle').addEventListener('click', toggleSidebar);
+      qs('#sidebarBackdrop').addEventListener('click', hideSidebar);
+      qsa('[data-section]').forEach(el=>{
+        el.addEventListener('click', async (e)=>{
+          e.preventDefault();
+          await showSection(el.dataset.section);
+        });
+      });
+
+      // Auth events
+      qs('#login-form').addEventListener('submit', handleLogin);
+      qs('#register-form').addEventListener('submit', handleRegister);
+      qs('#show-register').addEventListener('click', (e)=>{ e.preventDefault(); showRegisterForm(); });
+      qs('#show-login').addEventListener('click', (e)=>{ e.preventDefault(); showLoginForm(); });
+      qs('#logout-btn').addEventListener('click', doLogout);
+
+      // Exercises events
+      qs('#exerciseForm').addEventListener('submit', upsertExercise);
+      qs('#exerciseModal').addEventListener('show.bs.modal', (ev)=>{
+        const trigger = ev.relatedTarget;
+        const mode = trigger?.getAttribute('data-mode') || 'add';
+        qs('#exerciseForm').reset();
+        qs('#exerciseForm').classList.remove('was-validated');
+        qs('#exerciseId').value = '';
+        qs('#exerciseModalTitle').textContent = mode==='add' ? 'Add Exercise' : 'Edit Exercise';
+      });
+      qs('#exercises-table').addEventListener('click', async (e)=>{
+        const btn = e.target.closest('button');
+        if(!btn) return;
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        if(action==='edit-exercise'){ await editExercise(id); }
+        if(action==='delete-exercise'){ await deleteExercise(id); }
+      });
+      qs('#exercise-search').addEventListener('input', async ()=>{
+        try{
+          const data = await api('/exercises/');
+          renderExerciseRows(data);
+        }catch(_){}
+      });
+      qs('#exercise-refresh').addEventListener('click', loadExercises);
+
+      // Programs events
+      qs('#programForm').addEventListener('submit', upsertProgram);
+      qs('#programModal').addEventListener('show.bs.modal', (ev)=>{
+        const trigger = ev.relatedTarget;
+        const mode = trigger?.getAttribute('data-mode') || 'add';
+        qs('#programForm').reset();
+        qs('#programForm').classList.remove('was-validated');
+        qs('#programId').value = '';
+        qs('#programModalTitle').textContent = mode==='add' ? 'Create Program' : 'Edit Program';
+      });
+      qs('#programs-list').addEventListener('click', async (e)=>{
+        const btn = e.target.closest('button');
+        if(!btn) return;
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        if(action==='edit-program'){ await editProgram(id); }
+        if(action==='delete-program'){ await deleteProgram(id); }
+      });
+      qs('#program-refresh').addEventListener('click', loadPrograms);
+
+      // Workouts events
+      qs('#workoutForm').addEventListener('submit', upsertWorkout);
+      qs('#workoutModal').addEventListener('show.bs.modal', (ev)=>{
+        const trigger = ev.relatedTarget;
+        const mode = trigger?.getAttribute('data-mode') || 'add';
+        qs('#workoutForm').reset();
+        qs('#workoutForm').classList.remove('was-validated');
+        qs('#workoutId').value = '';
+        qs('#workoutModalTitle').textContent = mode==='add' ? 'Add Workout' : 'Edit Workout';
+        // ensure program list fresh
+        loadPrograms().catch(()=>{});
+      });
+      qs('#sessions-table').addEventListener('click', async (e)=>{
+        const btn = e.target.closest('button');
+        if(!btn) return;
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        if(action==='edit-workout'){ await editWorkout(id); }
+        if(action==='delete-workout'){ await deleteWorkout(id); }
+      });
+      qs('#workout-refresh').addEventListener('click', loadWorkouts);
+
+      // Profile events
+      qs('#profile-form').addEventListener('submit', updateProfile);
+
+      // Analytics events
+      qs('#exerciseSelect').addEventListener('change', onExerciseSelectChange);
+    });
+
+    function showRegisterForm(){
+      qs('#login-form').classList.add('hidden');
+      qs('#register-form').classList.remove('hidden');
+    }
+    function showLoginForm(){
+      qs('#register-form').classList.add('hidden');
+      qs('#login-form').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
