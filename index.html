@@ -1,643 +1,789 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fitness Tracker — Vanilla JS</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <style>
-    :root {
-      --primary: #ffffff;
-      --secondary: #f8f9fa;
-      --accent: #000000;
-      --text: #212529;
-      --border: #dee2e6;
-    }
-    body { background: var(--secondary); font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; color: var(--text); padding-top: 70px; }
-    .navbar { background: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.08); position: fixed; top: 0; left: 0; right: 0; z-index: 1030; }
-    .navbar-brand { font-weight: 800; color: var(--accent) !important; }
-    .auth-container { max-width: 420px; margin: 50px auto; padding: 22px; background: #fff; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
-    .sidebar { background: var(--primary); position: fixed; top: 56px; right: 0; bottom: 0; width: 280px; padding: 20px 0; box-shadow: -2px 0 10px rgba(0,0,0,0.06); transform: translateX(100%); transition: 0.28s ease; z-index: 1020; overflow-y: auto; }
-    .sidebar.show { transform: translateX(0); }
-    .sidebar .nav-link { color: var(--text); padding: 12px 20px; margin: 5px 15px; border-radius: 8px; }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--secondary); color: var(--accent); }
-    .sidebar-backdrop { position: fixed; top: 56px; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); z-index: 1010; display: none; }
-    .main-content { padding: 20px; }
-    .section-title { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 25px; font-weight: 700; }
-    .hidden { display: none !important; }
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.04); }
-    .btn-dark { border-radius: 10px; }
-    .table td, .table th { vertical-align: middle; }
-    .min-h-280 { min-height: 280px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitnessTracker Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #ffffff;
+            --secondary: #f8f9fa;
+            --accent: #000000;
+            --text: #212529;
+            --light-text: #6c757d;
+            --border: #dee2e6;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        /* Enhanced Header */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--accent) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .navbar-brand i {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Auth Section with glassmorphism */
+        .auth-container {
+            max-width: 450px;
+            margin: 100px auto 50px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .auth-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Enhanced Sidebar */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            position: fixed;
+            top: 80px;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            padding: 30px 0;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1020;
+            overflow-y: auto;
+            border-left: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar.show {
+            transform: translateX(0);
+        }
+        
+        .sidebar .nav-link {
+            color: var(--text);
+            padding: 15px 25px;
+            margin: 5px 20px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+        
+        .sidebar .nav-link:hover::before,
+        .sidebar .nav-link.active::before {
+            left: 0;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .sidebar-backdrop {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            z-index: 1010;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 30px;
+            transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: calc(100vh - 80px);
+        }
+        
+        .section-title {
+            border-bottom: 3px solid transparent;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: border-box;
+            border-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) 1;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+        
+        /* Enhanced Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 20px 25px;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* Stats Cards */
+        .stats-card {
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .stats-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stats-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin: 15px 0 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-label {
+            font-weight: 600;
+            color: var(--light-text);
+            margin-bottom: 10px;
+        }
+        
+        /* Enhanced Buttons */
+        .btn {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 12px 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        
+        .btn-outline-primary {
+            color: var(--accent);
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
+        }
+        
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Form Controls */
+        .form-control, .form-select {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.15);
+            background: white;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        
+        /* Tables */
+        .table {
+            background: transparent;
+        }
+        
+        .table th {
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+            font-weight: 600;
+            color: var(--accent);
+            padding: 15px;
+        }
+        
+        .table td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: scale(1.01);
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        /* List Groups */
+        .list-group-item {
+            border: none;
+            background: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .list-group-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+        
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 1050;
+            max-width: 350px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Utility Classes */
+        .hidden { display: none !important; }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Responsive Design */
+        @media (min-width: 1200px) {
+            .sidebar {
+                transform: translateX(0);
+                position: fixed;
+            }
+            
+            .main-content {
+                margin-right: 300px;
+            }
+            
+            .navbar-toggler {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 1199.98px) {
+            .sidebar {
+                top: 80px;
+                width: 280px;
+            }
+            
+            .main-content {
+                margin-right: 0;
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+            
+            .stats-card {
+                padding: 20px 15px;
+            }
+            
+            .stats-number {
+                font-size: 2.2rem;
+            }
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal Enhancements */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+        
+        /* Tab Navigation */
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--light-text);
+            font-weight: 600;
+            padding: 12px 20px;
+            margin-right: 5px;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .nav-tabs .nav-link:hover:not(.active) {
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--accent);
+        }
+    </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#"><i class="fas fa-dumbbell"></i> FitnessTracker</a>
-      <button class="navbar-toggler ms-auto" id="sidebarToggle" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <!-- Enhanced Header -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-dumbbell"></i> FitnessTracker Pro
+            </a>
+            <button class="navbar-toggler" type="button" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Enhanced Auth Section -->
+    <div id="auth-section" class="auth-container">
+        <div id="login-form-container">
+            <h2 class="auth-title">Welcome Back</h2>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" id="login-username" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="login-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </button>
+                <div class="text-center">
+                    <small class="text-muted">Don't have an account? 
+                        <a href="#" id="show-register" class="gradient-text fw-bold">Create one</a>
+                    </small>
+                </div>
+            </form>
+        </div>
+        
+        <div id="register-form-container" class="hidden">
+            <h2 class="auth-title">Join FitnessTracker Pro</h2>
+            <form id="register-form">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" id="register-username" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="register-email" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="register-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </button>
+                <div class="text-center">
+                    <small class="text-muted">Already have an account? 
+                        <a href="#" id="show-login" class="gradient-text fw-bold">Sign in</a>
+                    </small>
+                </div>
+            </form>
+        </div>
     </div>
-  </nav>
-
-  <!-- Auth -->
-  <div id="auth-section" class="auth-container">
-    <h3 class="text-center mb-4">Welcome back</h3>
-    <form id="login-form" class="needs-validation" novalidate>
-      <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" class="form-control" id="login-username" required />
-        <div class="invalid-feedback">Username is required.</div>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input type="password" class="form-control" id="login-password" required />
-        <div class="invalid-feedback">Password is required.</div>
-      </div>
-      <button type="submit" class="btn btn-dark w-100">Login</button>
-      <div class="text-center mt-3"><small class="text-muted">Don't have an account? <a href="#" id="show-register">Register</a></small></div>
-    </form>
-
-    <form id="register-form" class="needs-validation hidden" novalidate>
-      <h3 class="text-center mb-4">Create account</h3>
-      <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="register-username" required><div class="invalid-feedback">Required.</div></div>
-      <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="register-email" required><div class="invalid-feedback">Valid email required.</div></div>
-      <div class="mb-3"><label class="form-label">Password</label><input type="password" class="form-control" id="register-password" required><div class="invalid-feedback">Required.</div></div>
-      <button type="submit" class="btn btn-dark w-100">Register</button>
-      <div class="text-center mt-3"><small class="text-muted">Already have an account? <a href="#" id="show-login">Login</a></small></div>
-    </form>
-  </div>
-
-  <!-- Sidebar backdrop -->
-  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-
-  <!-- Sidebar -->
-  <aside id="sidebar" class="sidebar">
-    <ul class="nav flex-column">
-      <li class="nav-item"><a class="nav-link active" data-section="dashboard" href="#"><i class="fas fa-gauge"></i> Dashboard</a></li>
-      <li class="nav-item"><a class="nav-link" data-section="exercises" href="#"><i class="fas fa-running"></i> Exercises</a></li>
-      <li class="nav-item"><a class="nav-link" data-section="workouts" href="#"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-      <li class="nav-item"><a class="nav-link" data-section="programs" href="#"><i class="fas fa-clipboard-list"></i> Programs</a></li>
-      <li class="nav-item"><a class="nav-link" data-section="analytics" href="#"><i class="fas fa-chart-line"></i> Analytics</a></li>
-      <li class="nav-item"><a class="nav-link" data-section="profile" href="#"><i class="fas fa-user"></i> Profile</a></li>
-      <li class="nav-item mt-4"><a class="nav-link text-danger" href="#" id="logout-btn"><i class="fas fa-right-from-bracket"></i> Logout</a></li>
-    </ul>
-  </aside>
-
-  <!-- App -->
-  <main id="app-section" class="main-content hidden">
-    <!-- Dashboard -->
-    <section id="dashboard-section">
-      <h2 class="section-title">Dashboard</h2>
-      <div id="dashboard-stats" class="row g-3"></div>
-      <div class="row mt-2">
-        <div class="col-lg-8 mb-4">
-          <div class="card min-h-280">
-            <div class="card-header">Weight history</div>
-            <div class="card-body"><canvas id="weightChart" height="200"></canvas></div>
-          </div>
-        </div>
-        <div class="col-lg-4 mb-4">
-          <div class="card min-h-280">
-            <div class="card-header">Recent workouts</div>
-            <ul id="recent-workouts" class="list-group list-group-flush">
-              <li class="list-group-item text-center"><div class="spinner-border" role="status"></div></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Exercises -->
-    <section id="exercises-section" class="hidden">
-      <div class="d-flex align-items-center justify-content-between">
-        <h2 class="section-title mb-0">Exercises</h2>
-        <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exerciseModal"><i class="fa fa-plus"></i> Add</button>
-      </div>
-      <div class="table-responsive mt-3">
-        <table class="table align-middle">
-          <thead><tr><th>Name</th><th>Category</th><th>Description</th><th class="text-end">Actions</th></tr></thead>
-          <tbody id="exercises-table"><tr><td colspan="4" class="text-center"><div class="spinner-border" role="status"></div></td></tr></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Programs -->
-    <section id="programs-section" class="hidden">
-      <div class="d-flex align-items-center justify-content-between">
-        <h2 class="section-title mb-0">Programs</h2>
-        <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#programModal"><i class="fa fa-plus"></i> Create</button>
-      </div>
-      <div id="programs-list" class="row g-3 mt-1"></div>
-    </section>
-
-    <!-- Workouts -->
-    <section id="workouts-section" class="hidden">
-      <div class="d-flex align-items-center justify-content-between">
-        <h2 class="section-title mb-0">Workouts</h2>
-        <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#workoutModal"><i class="fa fa-plus"></i> Add</button>
-      </div>
-      <div class="table-responsive mt-3">
-        <table class="table align-middle">
-          <thead><tr><th>Date</th><th>Program</th><th>Duration</th><th class="text-end">Actions</th></tr></thead>
-          <tbody id="workouts-table"><tr><td colspan="4" class="text-center"><div class="spinner-border" role="status"></div></td></tr></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Analytics -->
-    <section id="analytics-section" class="hidden">
-      <h2 class="section-title">Analytics</h2>
-      <ul class="nav nav-tabs mb-3">
-        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#weightTab">Weight</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#bmiTab">BMI</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#exerciseTab">Exercise</a></li>
-      </ul>
-      <div class="tab-content">
-        <div class="tab-pane fade show active" id="weightTab"><canvas id="weightProgressChart" height="200"></canvas></div>
-        <div class="tab-pane fade" id="bmiTab"><canvas id="bmiChart" height="200"></canvas></div>
-        <div class="tab-pane fade" id="exerciseTab">
-          <div class="row g-2 mb-2">
-            <div class="col-sm-6">
-              <select id="exerciseSelect" class="form-select"><option value="">Select exercise...</option></select>
+    
+    <!-- Sidebar Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    
+    <!-- Enhanced Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="exercises">
+                    <i class="fas fa-running"></i> Exercise Library
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="workouts">
+                    <i class="fas fa-dumbbell"></i> Workout Sessions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="programs">
+                    <i class="fas fa-clipboard-list"></i> Training Programs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="analytics">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="profile">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mt-4">
+                <a class="nav-link text-danger" href="#" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="app-section" class="main-content hidden">
+        <!-- Enhanced Dashboard Section -->
+        <div id="dashboard-section">
+            <h2 class="section-title">Dashboard Overview</h2>
+            
+            <div class="row g-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card">
+                        <i class="fas fa-weight"></i>
+                        <h5 class="stats-label">Current Weight</h5>
+                        <div class="stats-number" id="current-weight">--</div>
+                        <small class="text-muted">kg</small>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card">
+                        <i class="fas fa-heart"></i>
+                        <h5 class="stats-label">BMI Index</h5>
+                        <div class="stats-number" id="current-bmi">--</div>
+                        <small class="text-muted" id="bmi-status">Status</small>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <h5 class="stats-label">This Month</h5>
+                        <div class="stats-number" id="workout-count">--</div>
+                        <small class="text-muted">workouts</small>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card">
+                        <i class="fas fa-trophy"></i>
+                        <h5 class="stats-label">Total Exercises</h5>
+                        <div class="stats-number" id="exercise-count">--</div>
+                        <small class="text-muted">exercises</small>
+                    </div>
+                </div>
             </div>
-          </div>
-          <canvas id="exerciseProgressChart" height="200"></canvas>
+            
+            <div class="row g-4 mt-4">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Weight Progress</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="weight-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush" id="recent-workouts">
+                                <li class="list-group-item text-center">
+                                    <div class="spinner"></div>
+                                    Loading workouts...
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4 mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-rocket me-2"></i>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-primary w-100" data-section="workouts">
+                                        <i class="fas fa-plus-circle me-2"></i>Log Workout
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-primary w-100" data-section="exercises">
+                                        <i class="fas fa-running me-2"></i>Add Exercise
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-primary w-100" data-section="programs">
+                                        <i class="fas fa-clipboard-list me-2"></i>Create Program
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-primary w-100" data-section="profile">
+                                        <i class="fas fa-user-edit me-2"></i>Update Profile
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Modals -->
-  <div class="modal fade" id="exerciseModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Exercise</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-        <div class="modal-body">
-          <form id="exercise-form" class="needs-validation" novalidate>
-            <input type="hidden" id="exercise-id" />
-            <div class="mb-3"><label class="form-label">Name</label><input id="exercise-name" class="form-control" required /><div class="invalid-feedback">Required.</div></div>
-            <div class="mb-3"><label class="form-label">Category</label><input id="exercise-category" class="form-control" required /><div class="invalid-feedback">Required.</div></div>
-            <div class="mb-3"><label class="form-label">Description</label><textarea id="exercise-description" class="form-control" rows="3"></textarea></div>
-          </form>
+        
+        <!-- Exercise Management Section -->
+        <div id="exercises-section" class="hidden">
+            <h2 class="section-title">Exercise Library</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-auto">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExerciseModal">
+                        <i class="fas fa-plus me-2"></i>Add New Exercise
+                    </button>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" placeholder="Search exercises..." id="exercise-search">
+                </div>
+                <div class="col-auto">
+                    <select class="form-select" id="category-filter">
+                        <option value="">All Categories</option>
+                        <option value="strength">Strength</option>
+                        <option value="cardio">Cardio</option>
+                        <option value="flexibility">Flexibility</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-dumbbell me-2"></i>Exercise</th>
+                                    <th><i class="fas fa-tags me-2"></i>Category</th>
+                                    <th><i class="fas fa-info-circle me-2"></i>Description</th>
+                                    <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="exercises-table">
+                                <tr><td colspan="4" class="text-center"><div class="spinner"></div>Loading exercises...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button id="save-exercise" class="btn btn-dark">Save</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="programModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Program</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-        <div class="modal-body">
-          <form id="program-form" class="needs-validation" novalidate>
-            <input type="hidden" id="program-id" />
-            <div class="mb-3"><label class="form-label">Name</label><input id="program-name" class="form-control" required /><div class="invalid-feedback">Required.</div></div>
-            <div class="mb-3"><label class="form-label">Description</label><textarea id="program-description" class="form-control" rows="3"></textarea></div>
-          </form>
+        
+        <!-- Workout Sessions Section -->
+        <div id="workouts-section" class="hidden">
+            <h2 class="section-title">Workout Sessions</h2>
+            <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addWorkoutModal">
+                <i class="fas fa-plus me-2"></i>Log New Session
+            </button>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Your Training Sessions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-calendar me-2"></i>Date</th>
+                                    <th><i class="fas fa-clipboard-list me-2"></i>Program</th>
+                                    <th><i class="fas fa-clock me-2"></i>Duration</th>
+                                    <th><i class="fas fa-fire me-2"></i>Intensity</th>
+                                    <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessions-table">
+                                <tr><td colspan="5" class="text-center"><div class="spinner"></div>Loading sessions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button id="save-program" class="btn btn-dark">Save</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="workoutModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Workout Session</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-        <div class="modal-body">
-          <form id="workout-form" class="needs-validation" novalidate>
-            <input type="hidden" id="workout-id" />
-            <div class="mb-3"><label class="form-label">Date</label><input type="date" id="workout-date" class="form-control" required /><div class="invalid-feedback">Required.</div></div>
-            <div class="mb-3"><label class="form-label">Program (ID or name)</label><input id="workout-program" class="form-control" /></div>
-            <div class="mb-3"><label class="form-label">Duration (min)</label><input type="number" id="workout-duration" class="form-control" min="0" required /><div class="invalid-feedback">Required.</div></div>
-            <div class="mb-3"><label class="form-label">Notes</label><textarea id="workout-notes" class="form-control" rows="2"></textarea></div>
-          </form>
-        </div>
-        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button id="save-workout" class="btn btn-dark">Save</button></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toasts -->
-  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
-    <div id="appToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body" id="toastBody">Saved</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // ====== CONFIG ======
-    const API_BASE = 'https://nasiruos.pythonanywhere.com/api';
-
-    // ====== STATE ======
-    let accessToken = null;
-    let weightChart, bmiChart, exerciseChart;
-
-    // ====== HELPERS ======
-    const qs = (sel, el = document) => el.querySelector(sel);
-    const qsa = (sel, el = document) => [...el.querySelectorAll(sel)];
-    const fmtDate = (d) => new Date(d).toLocaleDateString();
-    const toast = (msg) => { qs('#toastBody').textContent = msg; new bootstrap.Toast(qs('#appToast')).show(); };
-
-    const apiCall = async (url, method = 'GET', data = null) => {
-      const opts = { method, headers: { 'Content-Type': 'application/json', ...(accessToken && { 'Authorization': `Bearer ${accessToken}` }) } };
-      if (data) opts.body = JSON.stringify(data);
-      const res = await fetch(`${API_BASE}${url}`, opts);
-      if (res.status === 204) return {}; // no content
-      if (!res.ok) {
-        let err = {};
-        try { err = await res.json(); } catch {}
-        throw err;
-      }
-      try { return await res.json(); } catch { return {}; }
-    };
-
-    const requireAuth = async (fn) => {
-      if (!accessToken) throw new Error('Not authenticated');
-      return fn();
-    };
-
-    // ====== AUTH ======
-    function initAuth() {
-      // switch forms
-      qs('#show-register').addEventListener('click', (e) => { e.preventDefault(); qs('#login-form').classList.add('hidden'); qs('#register-form').classList.remove('hidden'); });
-      qs('#show-login').addEventListener('click', (e) => { e.preventDefault(); qs('#register-form').classList.add('hidden'); qs('#login-form').classList.remove('hidden'); });
-
-      // login
-      qs('#login-form').addEventListener('submit', async (e) => {
-        e.preventDefault(); e.stopPropagation();
-        const form = e.currentTarget; form.classList.add('was-validated');
-        if (!form.checkValidity()) return;
-        try {
-          const username = qs('#login-username').value.trim();
-          const password = qs('#login-password').value.trim();
-          const res = await apiCall('/accounts/login/', 'POST', { username, password });
-          accessToken = res.access;
-          qs('#auth-section').classList.add('hidden');
-          qs('#app-section').classList.remove('hidden');
-          setupNav();
-          // load everything
-          await Promise.all([loadDashboard(), loadExercises(), loadPrograms(), loadWorkouts(), loadAnalytics()]);
-          toast('Logged in');
-        } catch (e) { alert('Login failed'); }
-      });
-
-      // register
-      qs('#register-form').addEventListener('submit', async (e) => {
-        e.preventDefault(); e.stopPropagation();
-        const form = e.currentTarget; form.classList.add('was-validated');
-        if (!form.checkValidity()) return;
-        try {
-          const username = qs('#register-username').value.trim();
-          const email = qs('#register-email').value.trim();
-          const password = qs('#register-password').value.trim();
-          await apiCall('/accounts/register/', 'POST', { username, email, password });
-          toast('Registered successfully');
-          qs('#register-form').classList.add('hidden');
-          qs('#login-form').classList.remove('hidden');
-        } catch (e) { alert('Registration failed'); }
-      });
-
-      // logout
-      qs('#logout-btn').addEventListener('click', (e) => {
-        e.preventDefault(); accessToken = null; location.reload();
-      });
-    }
-
-    // ====== NAV & SIDEBAR ======
-    function setupNav() {
-      const sidebar = qs('#sidebar');
-      const backdrop = qs('#sidebarBackdrop');
-      qs('#sidebarToggle').addEventListener('click', () => { sidebar.classList.add('show'); backdrop.style.display = 'block'; });
-      backdrop.addEventListener('click', () => { sidebar.classList.remove('show'); backdrop.style.display = 'none'; });
-
-      qsa('.sidebar .nav-link').forEach((link) => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const section = link.getAttribute('data-section');
-          qsa('.sidebar .nav-link').forEach((l) => l.classList.remove('active'));
-          link.classList.add('active');
-          qsa('main > section').forEach((s) => s.classList.add('hidden'));
-          qs(`#${section}-section`).classList.remove('hidden');
-          sidebar.classList.remove('show'); backdrop.style.display = 'none';
-        });
-      });
-    }
-
-    // ====== DASHBOARD ======
-    async function loadDashboard() {
-      await requireAuth(async () => {
-        const statsRow = qs('#dashboard-stats');
-        statsRow.innerHTML = `
-          <div class='col-md-3 col-6'><div class='card p-3 text-center'><i class='fas fa-weight fa-2x mb-1'></i><h6>Weight</h6><div class='fs-4' id='stat-weight'>--</div></div></div>
-          <div class='col-md-3 col-6'><div class='card p-3 text-center'><i class='fas fa-heart fa-2x mb-1'></i><h6>BMI</h6><div class='fs-4' id='stat-bmi'>--</div></div></div>
-          <div class='col-md-3 col-6'><div class='card p-3 text-center'><i class='fas fa-calendar-check fa-2x mb-1'></i><h6>Workouts (month)</h6><div class='fs-4' id='stat-workouts'>--</div></div></div>
-          <div class='col-md-3 col-6'><div class='card p-3 text-center'><i class='fas fa-list fa-2x mb-1'></i><h6>Exercises</h6><div class='fs-4' id='stat-exercises'>--</div></div></div>`;
-
-        const [profile, sessions, exercises] = await Promise.all([
-          apiCall('/accounts/profile/current/'),
-          apiCall('/workouts/sessions/'),
-          apiCall('/exercises/')
-        ]);
-
-        qs('#stat-weight').textContent = profile?.weight ?? '--';
-        const bmi = (profile?.height && profile?.weight) ? (profile.weight / Math.pow(profile.height/100, 2)).toFixed(1) : '--';
-        qs('#stat-bmi').textContent = bmi;
-
-        const curMonth = new Date().getMonth();
-        const monthSessions = (sessions || []).filter(s => new Date(s.date).getMonth() === curMonth);
-        qs('#stat-workouts').textContent = monthSessions.length;
-        qs('#stat-exercises').textContent = (exercises || []).length;
-
-        // Recent workouts list
-        const list = qs('#recent-workouts');
-        list.innerHTML = '';
-        (sessions || []).slice(0, 5).forEach(s => {
-          const item = document.createElement('li');
-          item.className = 'list-group-item d-flex justify-content-between align-items-center';
-          item.innerHTML = `<div><strong>${fmtDate(s.date)}</strong><br><small>${s.program_name || s.program || 'No program'}</small></div><span class='badge text-bg-dark'>${s.duration} min</span>`;
-          list.appendChild(item);
-        });
-        if (!(sessions || []).length) list.innerHTML = '<li class="list-group-item text-center">No workouts yet</li>';
-
-        // Weight chart on dashboard
-        const history = await apiCall('/accounts/profile/history/');
-        const labels = (history || []).map(h => fmtDate(h.created_at));
-        const weights = (history || []).map(h => h.weight);
-        if (weightChart) weightChart.destroy();
-        weightChart = new Chart(qs('#weightChart'), { type: 'line', data: { labels, datasets: [{ label: 'Weight (kg)', data: weights, borderColor: '#000', backgroundColor: 'rgba(0,0,0,0.1)', fill: true, tension: 0.35 }] }, options: { plugins: { legend: { display: false } } } });
-      });
-    }
-
-    // ====== EXERCISES CRUD ======
-    async function loadExercises() {
-      await requireAuth(async () => {
-        const tbody = qs('#exercises-table');
-        tbody.innerHTML = `<tr><td colspan='4' class='text-center'><div class='spinner-border' role='status'></div></td></tr>`;
-        const data = await apiCall('/exercises/');
-        if (!data.length) { tbody.innerHTML = `<tr><td colspan='4' class='text-center'>No exercises yet</td></tr>`; return; }
-        tbody.innerHTML = '';
-        data.forEach(ex => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${ex.name}</td>
-            <td>${ex.category || '-'}</td>
-            <td>${ex.description || '-'}</td>
-            <td class='text-end'>
-              <button class='btn btn-sm btn-outline-secondary me-2' data-action='edit-exercise' data-id='${ex.id}'>Edit</button>
-              <button class='btn btn-sm btn-outline-danger' data-action='delete-exercise' data-id='${ex.id}'>Delete</button>
-            </td>`;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function openExerciseModal(ex = null) {
-      qs('#exercise-form').reset();
-      qsa('#exercise-form .was-validated').forEach(el => el.classList.remove('was-validated'));
-      qs('#exercise-id').value = ex?.id || '';
-      qs('#exercise-name').value = ex?.name || '';
-      qs('#exercise-category').value = ex?.category || '';
-      qs('#exercise-description').value = ex?.description || '';
-      new bootstrap.Modal(qs('#exerciseModal')).show();
-    }
-
-    async function saveExercise() {
-      const form = qs('#exercise-form'); form.classList.add('was-validated');
-      if (!form.checkValidity()) return;
-      const id = qs('#exercise-id').value;
-      const payload = { name: qs('#exercise-name').value.trim(), category: qs('#exercise-category').value.trim(), description: qs('#exercise-description').value.trim() };
-      try {
-        if (id) await apiCall(`/exercises/${id}/`, 'PUT', payload); else await apiCall('/exercises/', 'POST', payload);
-        bootstrap.Modal.getInstance(qs('#exerciseModal')).hide();
-        toast('Exercise saved');
-        await loadExercises();
-        await loadAnalyticsSelectExercises(); // keep analytics select fresh
-      } catch (e) { alert('Failed to save exercise'); }
-    }
-
-    async function deleteExercise(id) {
-      if (!confirm('Delete this exercise?')) return;
-      try { await apiCall(`/exercises/${id}/`, 'DELETE'); toast('Exercise deleted'); await loadExercises(); await loadAnalyticsSelectExercises(); } catch { alert('Delete failed'); }
-    }
-
-    // ====== PROGRAMS CRUD ======
-    async function loadPrograms() {
-      await requireAuth(async () => {
-        const list = qs('#programs-list');
-        list.innerHTML = `<div class='col-12 text-center my-3'><div class='spinner-border' role='status'></div></div>`;
-        const data = await apiCall('/programs/');
-        list.innerHTML = '';
-        if (!data.length) { list.innerHTML = `<div class='col-12 text-center text-muted'>No programs yet</div>`; return; }
-        data.forEach(p => {
-          const col = document.createElement('div'); col.className = 'col-md-6 col-lg-4';
-          col.innerHTML = `
-            <div class='card h-100'>
-              <div class='card-body'>
-                <h5 class='card-title mb-1'>${p.name}</h5>
-                <p class='card-text small text-muted'>${p.description || '—'}</p>
-              </div>
-              <div class='card-footer bg-transparent d-flex justify-content-end gap-2'>
-                <button class='btn btn-sm btn-outline-secondary' data-action='edit-program' data-id='${p.id}'>Edit</button>
-                <button class='btn btn-sm btn-outline-danger' data-action='delete-program' data-id='${p.id}'>Delete</button>
-              </div>
-            </div>`;
-          list.appendChild(col);
-        });
-      });
-    }
-
-    function openProgramModal(p = null) {
-      qs('#program-form').reset();
-      qs('#program-id').value = p?.id || '';
-      qs('#program-name').value = p?.name || '';
-      qs('#program-description').value = p?.description || '';
-      new bootstrap.Modal(qs('#programModal')).show();
-    }
-
-    async function saveProgram() {
-      const form = qs('#program-form'); form.classList.add('was-validated'); if (!form.checkValidity()) return;
-      const id = qs('#program-id').value;
-      const payload = { name: qs('#program-name').value.trim(), description: qs('#program-description').value.trim() };
-      try {
-        if (id) await apiCall(`/programs/${id}/`, 'PUT', payload); else await apiCall('/programs/', 'POST', payload);
-        bootstrap.Modal.getInstance(qs('#programModal')).hide();
-        toast('Program saved');
-        await loadPrograms();
-      } catch { alert('Failed to save program'); }
-    }
-
-    async function deleteProgram(id) {
-      if (!confirm('Delete this program?')) return;
-      try { await apiCall(`/programs/${id}/`, 'DELETE'); toast('Program deleted'); await loadPrograms(); } catch { alert('Delete failed'); }
-    }
-
-    // ====== WORKOUTS CRUD ======
-    async function loadWorkouts() {
-      await requireAuth(async () => {
-        const tbody = qs('#workouts-table');
-        tbody.innerHTML = `<tr><td colspan='4' class='text-center'><div class='spinner-border' role='status'></div></td></tr>`;
-        const data = await apiCall('/workouts/sessions/');
-        if (!data.length) { tbody.innerHTML = `<tr><td colspan='4' class='text-center'>No workouts yet</td></tr>`; return; }
-        tbody.innerHTML = '';
-        data.forEach(w => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${fmtDate(w.date)}</td>
-            <td>${w.program_name || w.program || '—'}</td>
-            <td>${w.duration ?? '—'} min</td>
-            <td class='text-end'>
-              <button class='btn btn-sm btn-outline-secondary me-2' data-action='edit-workout' data-id='${w.id}'>Edit</button>
-              <button class='btn btn-sm btn-outline-danger' data-action='delete-workout' data-id='${w.id}'>Delete</button>
-            </td>`;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function openWorkoutModal(w = null) {
-      qs('#workout-form').reset();
-      qs('#workout-id').value = w?.id || '';
-      qs('#workout-date').value = w?.date ? w.date.split('T')[0] : '';
-      qs('#workout-program').value = w?.program || w?.program_name || '';
-      qs('#workout-duration').value = w?.duration || '';
-      qs('#workout-notes').value = w?.notes || '';
-      new bootstrap.Modal(qs('#workoutModal')).show();
-    }
-
-    async function saveWorkout() {
-      const form = qs('#workout-form'); form.classList.add('was-validated'); if (!form.checkValidity()) return;
-      const id = qs('#workout-id').value;
-      const payload = {
-        date: qs('#workout-date').value,
-        program: qs('#workout-program').value, // adjust to your API expectation (ID or string)
-        duration: Number(qs('#workout-duration').value),
-        notes: qs('#workout-notes').value.trim()
-      };
-      try {
-        if (id) await apiCall(`/workouts/sessions/${id}/`, 'PUT', payload); else await apiCall('/workouts/sessions/', 'POST', payload);
-        bootstrap.Modal.getInstance(qs('#workoutModal')).hide();
-        toast('Workout saved');
-        await loadWorkouts();
-        await loadDashboard();
-      } catch (e) { alert('Failed to save workout'); }
-    }
-
-    async function deleteWorkout(id) {
-      if (!confirm('Delete this workout?')) return;
-      try { await apiCall(`/workouts/sessions/${id}/`, 'DELETE'); toast('Workout deleted'); await loadWorkouts(); await loadDashboard(); } catch { alert('Delete failed'); }
-    }
-
-    // ====== ANALYTICS ======
-    const renderLine = (canvas, labels, data, label) => new Chart(canvas, {
-      type: 'line',
-      data: { labels, datasets: [{ label, data, borderColor: '#000', backgroundColor: 'rgba(0,0,0,0.1)', tension: 0.35, fill: true }] },
-      options: { responsive: true, plugins: { legend: { display: false } } }
-    });
-
-    async function loadAnalyticsSelectExercises() {
-      const select = qs('#exerciseSelect');
-      const exercises = await apiCall('/exercises/');
-      select.innerHTML = '<option value="">Select exercise...</option>';
-      exercises.forEach(e => { const o = document.createElement('option'); o.value = e.id; o.textContent = e.name; select.appendChild(o); });
-    }
-
-    async function loadAnalytics() {
-      await requireAuth(async () => {
-        // Weight & BMI
-        const history = await apiCall('/accounts/profile/history/');
-        const labels = (history || []).map(h => fmtDate(h.created_at));
-        const weights = (history || []).map(h => h.weight);
-        const bmis = (history || []).map(h => (h.height && h.weight) ? Number((h.weight / Math.pow(h.height/100,2)).toFixed(1)) : null);
-        if (weightChart) weightChart.destroy();
-        if (bmiChart) bmiChart.destroy();
-        weightChart = renderLine(qs('#weightProgressChart'), labels, weights, 'Weight (kg)');
-        bmiChart = renderLine(qs('#bmiChart'), labels, bmis, 'BMI');
-
-        // Exercise select + progress
-        await loadAnalyticsSelectExercises();
-      });
-    }
-
-    // Change handler for exercise progress
-    qs('#exerciseSelect').addEventListener('change', async (e) => {
-      const id = e.target.value; if (!id) return;
-      try {
-        const progress = await apiCall(`/exercises/${id}/progress/`);
-        const labels = (progress || []).map(p => fmtDate(p.date));
-        const values = (progress || []).map(p => p.value);
-        if (exerciseChart) exerciseChart.destroy();
-        exerciseChart = renderLine(qs('#exerciseProgressChart'), labels, values, 'Progress');
-      } catch (e) { console.error('Exercise progress error', e); }
-    });
-
-    // ====== EVENTS: SAVE BUTTONS + TABLE DELEGATION ======
-    function initEvents() {
-      qs('#save-exercise').addEventListener('click', saveExercise);
-      qs('#save-program').addEventListener('click', saveProgram);
-      qs('#save-workout').addEventListener('click', saveWorkout);
-
-      // Delegation for exercises
-      qs('#exercises-table').addEventListener('click', async (e) => {
-        const btn = e.target.closest('button'); if (!btn) return;
-        const id = btn.getAttribute('data-id');
-        const action = btn.getAttribute('data-action');
-        if (action === 'edit-exercise') {
-          const list = await apiCall('/exercises/');
-          const ex = list.find(x => String(x.id) === String(id));
-          openExerciseModal(ex);
-        } else if (action === 'delete-exercise') {
-          deleteExercise(id);
-        }
-      });
-
-      // Delegation for programs
-      qs('#programs-list').addEventListener('click', async (e) => {
-        const btn = e.target.closest('button'); if (!btn) return;
-        const id = btn.getAttribute('data-id');
-        const action = btn.getAttribute('data-action');
-        if (action === 'edit-program') {
-          const list = await apiCall('/programs/');
-          const p = list.find(x => String(x.id) === String(id));
-          openProgramModal(p);
-        } else if (action === 'delete-program') {
-          deleteProgram(id);
-        }
-      });
-
-      // Delegation for workouts
-      qs('#workouts-table').addEventListener('click', async (e) => {
-        const btn = e.target.closest('button'); if (!btn) return;
-        const id = btn.getAttribute('data-id');
-        const action = btn.getAttribute('data-action');
-        if (action === 'edit-workout') {
-          const list = await apiCall('/workouts/sessions/');
-          const w = list.find(x => String(x.id) === String(id));
-          openWorkoutModal(w);
-        } else if (action === 'delete-workout') {
-          deleteWorkout(id);
-        }
-      });
-
-      // When opening blank modals via buttons
-      qs('[data-bs-target="#exerciseModal"]').addEventListener('click', () => openExerciseModal());
-      qs('[data-bs-target="#programModal"]').addEventListener('click', () => openProgramModal());
-      qs('[data-bs-target="#workoutModal"]').addEventListener('click', () => openWorkoutModal());
-    }
-
-    // ====== INIT ======
-    document.addEventListener('DOMContentLoaded', () => {
-      initAuth();
-      initEvents();
-    });
-  </script>
-</body>
-</html>
+        
+        <!-- Programs Section -->
+        <div id="programs-section" class="hidden">
+            <h2 class="section-title">Training
